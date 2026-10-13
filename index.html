@@ -11,12 +11,13 @@
     --card: #ffffff;
     --tinta: #241436;
     --tinta-fraca: #6b5b7d;
-    --roxo: #4b0082;
-    --roxo-esc: #3b1163;
+    --roxo: #473366;
+    --roxo-esc: #473366;
     --laranja: #ff6633;
     --borda: #e0d6ee;
-    --grade: #e6dff0;
+    --grade: rgba(75, 0, 130, 0.16);
     --eixo: #2b2140;
+    --fundo-grafico: #FAD400;   /* fundo amarelo dos gráficos */
   }
   * { box-sizing: border-box; }
   html, body { overflow-x: hidden; }
@@ -92,18 +93,65 @@
   .graph-nav h2 { font-size: 1.1rem; margin: 0; color: var(--tinta); }
   .stage-base canvas {
     display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto;
-    background: var(--card); border: 1px solid var(--borda); border-radius: 14px; cursor: pointer;
+    background: var(--fundo-grafico); border: 1px solid var(--borda); border-radius: 14px; cursor: pointer;
   }
 
   .avatars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 360px; margin: 14px auto; }
-  .avatar { font-size: 2rem; padding: 8px; min-height: 0; border-radius: 12px; border: 2px solid var(--borda); background: var(--card); cursor: pointer; }
+  .avatar { padding: 10px 4px 8px; min-height: 0; border-radius: 14px; border: 2px solid var(--borda); background: var(--card); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .avatar .rosto { font-size: 2.4rem; line-height: 1; }
+  .avatar small { font-size: .75rem; color: var(--tinta-fraca); font-weight: 600; }
   .avatar[aria-pressed="true"] { border-color: var(--roxo); background: var(--papel2); }
   .name-label { display: block; max-width: 360px; margin: 8px auto 6px; font-weight: 700; text-align: left; color: var(--roxo); }
   .name-input {
     display: block; width: 100%; max-width: 360px; margin: 0 auto; font: inherit; padding: 10px;
     border-radius: 12px; border: 1.5px solid var(--borda); background: var(--card); color: var(--tinta);
   }
-  .actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; }
+  .actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+  .stage-base canvas { touch-action: none; }
+  .formula { text-align: center; margin: 0 0 6px; font-weight: 600; color: var(--tinta-fraca); }
+  .icon.pulsar { animation: pulsar 1.2s ease-in-out infinite; }
+  @keyframes pulsar {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 102, 51, .7); }
+    50% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(255, 102, 51, 0); }
+  }
+  #festa { position: fixed; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+  @media (prefers-reduced-motion: reduce) {
+    .icon.pulsar { animation: none; box-shadow: 0 0 0 3px #FF6633; }
+  }
+
+  /* Mini-tutorial da página de instruções */
+  .tut { position: relative; margin-top: 12px; }
+  .legenda {
+    background: var(--roxo); color: #ffffff; border-radius: 12px; padding: 10px 14px;
+    text-align: center; font-weight: 600; min-height: 3.2em; display: flex; flex-direction: column; justify-content: center;
+  }
+  .legenda small { font-size: .78rem; opacity: .85; font-weight: 600; }
+  .demo { position: relative; margin-top: 8px; border: 1px solid var(--borda); border-radius: 14px; padding: 4px 8px 10px; background: var(--card); }
+  .demo.passivo { pointer-events: none; }
+  .demo .stage-top { padding-top: 8px; }
+  .demo .stage-base canvas { max-width: 300px; }
+  .destaque {
+    position: absolute; border: 2px dashed var(--laranja); border-radius: 12px; pointer-events: none;
+    transition: all .4s ease; z-index: 4;
+  }
+  .dedo {
+    position: absolute; left: 0; top: 0; font-size: 34px; line-height: 1; pointer-events: none;
+    transition: transform .6s ease; z-index: 6; will-change: transform;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,.25));
+  }
+  .toque {
+    position: absolute; left: 0; top: 0; width: 40px; height: 40px; margin: -20px 0 0 -20px;
+    border-radius: 50%; border: 3px solid var(--laranja); opacity: 0; pointer-events: none; z-index: 5;
+  }
+  .toque.on { animation: ondas .6s ease-out; }
+  @keyframes ondas {
+    0% { opacity: .9; transform: scale(.4); }
+    100% { opacity: 0; transform: scale(1.6); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dedo, .destaque, .track { transition: none; }
+    .toque.on { animation: none; }
+  }
 </style>
 </head>
 <body>
@@ -124,9 +172,9 @@
           <h1>Descubra com o gráfico</h1>
           <label class="name-label" for="studentName">Nome do estudante</label>
           <input class="name-input" type="text" id="studentName" autocomplete="name" placeholder="Digite seu nome">
-          <p class="lead" style="margin-top:16px">Escolha um avatar para começar.</p>
+          <p class="lead" style="margin-top:16px">Como você está se sentindo agora?</p>
           <div class="avatars" id="avatars"></div>
-          <p class="note" id="avatarMsg">Digite seu nome e escolha um avatar para continuar.</p>
+          <p class="note" id="avatarMsg">Digite seu nome e escolha uma carinha para continuar.</p>
           <div class="actions" style="justify-content:center">
             <button class="primary" id="startBtn" data-next disabled>Começar</button>
           </div>
@@ -134,7 +182,7 @@
       </div>
     </section>
 
-    <!-- Slide 1: instruções (a detalhar ao final) -->
+    <!-- Slide 1: instruções com mini-tutorial -->
     <section class="slide">
       <header class="hero">
         <img src="ifrj_logo_branca.png" alt="Logo do IFRJ Campus Nilópolis">
@@ -145,12 +193,26 @@
       </header>
       <div class="wrap">
         <div class="card-sec">
-          <h2><span class="num">i</span> Instruções</h2>
-          <p class="note" style="text-align:left">Esta página será detalhada ao final do projeto.</p>
+          <h2><span class="num">i</span> Como usar</h2>
+          <p class="note" style="text-align:left">Veja o que cada parte da tela faz. Depois é a sua vez.</p>
+
+          <div class="tut" id="tut">
+            <div class="legenda" id="legenda"><span>Preparando...</span><small id="contador"></small></div>
+            <div class="demo passivo" id="demo"></div>
+            <div class="destaque" id="destaque" hidden></div>
+            <div class="toque" id="toque"></div>
+            <div class="dedo" id="dedo" hidden>👆</div>
+          </div>
+
+          <div class="actions">
+            <button id="verDeNovo">Ver de novo</button>
+            <button id="pular">Pular</button>
+          </div>
         </div>
+
         <div class="actions">
           <button data-prev>← Voltar</button>
-          <button class="primary" data-go="2">Começar →</button>
+          <button class="primary" id="comecarBtn" data-go="2" disabled>Começar →</button>
         </div>
       </div>
     </section>
@@ -163,39 +225,51 @@
 <script>
 (() => {
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  const CURVE = '#975FA8';   // cor dos gráficos (destaques e âncoras)
+  const CURVE = '#473366';   // cor dos gráficos (destaques e âncoras)
   const SEG = '#E07415';     // cor dos intervalos no eixo x
   const PI = Math.PI;
   const WIN = { x0: -6, x1: 6, y0: -6, y1: 6 };
   const N = 1200;
   const DUR = 1500;          // duração da animação de cada propriedade, em ms
-  const AVATARS = ['🦊','🐼','🐸','🦉','🐙','🦄','🐯','🐨','🐵','🦖','🐧','🐢','🦋','🐝','🐬','🦁'];
+
+  // Como o estudante está se sentindo (id é o que será registrado)
+  const MOODS = [
+    { id: 'muito_feliz', nome: 'Muito feliz', rosto: '😄' },
+    { id: 'feliz', nome: 'Feliz', rosto: '🙂' },
+    { id: 'indiferente', nome: 'Indiferente', rosto: '😐' },
+    { id: 'triste', nome: 'Triste', rosto: '😞' }
+  ];
 
   // Funções da atividade. Cada uma pode ter janela própria (win), grade (grid),
   // extremidades finitas (finiteEdges) e rótulos do fim acima do eixo (labelsAbove).
+  // dom: domínio e img: imagem, como intervalos [início, fim] (±Infinity = sem limite)
+  // local: true quando o gráfico recebe o rótulo "Local" nos máximos e mínimos
   const FUNCS = [
-    { f: x => x * x - 4 },
-    { f: x => x ** 3 / 4 - 3 * x },
+    { f: x => x * x - 4, dom: [-Infinity, Infinity], img: [-4, Infinity], local: false },
+    { f: x => x ** 3 / 4 - 3 * x, dom: [-Infinity, Infinity], img: [-Infinity, Infinity], local: true },
     { f: x => 3 * Math.sin(x),
       win: { x0: -2 * PI, x1: 2 * PI }, finiteEdges: true, labelsAbove: true,
-      grid: [-2 * PI, -1.5 * PI, -PI, -PI / 2, 0, PI / 2, PI, 1.5 * PI, 2 * PI] },
-    { f: x => -((x - 1) ** 2) + 3 },
-    { f: x => Math.sqrt(x + 5) - 2 },
-    { f: x => Math.abs(x + 2) - 1 }
+      grid: [-2 * PI, -1.5 * PI, -PI, -PI / 2, 0, PI / 2, PI, 1.5 * PI, 2 * PI],
+      dom: [-Infinity, Infinity], img: [-3, 3], local: true },
+    { f: x => -((x - 1) ** 2) + 3, dom: [-Infinity, Infinity], img: [-Infinity, 3], local: true },
+    { f: x => Math.sqrt(x + 5) - 2, dom: [-5, Infinity], img: [-2, Infinity], local: false },
+    { f: x => Math.abs(x + 2) - 1, dom: [-Infinity, Infinity], img: [-1, Infinity], local: true }
   ];
 
   // Etapas e botões de cada etapa
   const ETAPAS = [
+    { nome: 'Domínio e Imagem', botoes: ['dominio', 'imagem'] },
     { nome: 'Sinais', botoes: ['positiva', 'negativa'] },
     { nome: 'Extremos', botoes: ['maximo', 'minimo'] },
     { nome: 'Crescimento', botoes: ['crescente', 'decrescente'] },
-    { nome: 'Raízes', botoes: ['raizes', 'intercepto'] }
+    { nome: 'Raízes e Interceptos', botoes: ['raizes', 'intercepto'] }
   ];
   const LABELS = {
+    dominio: 'Domínio', imagem: 'Imagem',
     positiva: 'Positiva', negativa: 'Negativa', maximo: 'Máximo', minimo: 'Mínimo',
     crescente: 'Crescente', decrescente: 'Decrescente', raizes: 'Raízes', intercepto: 'Intercepto em Y'
   };
-  const COLORS_ORDER = ['positiva', 'negativa', 'crescente', 'decrescente', 'maximo', 'minimo', 'raizes', 'intercepto'];
+  const COLORS_ORDER = ['dominio', 'imagem', 'positiva', 'negativa', 'crescente', 'decrescente', 'maximo', 'minimo', 'raizes', 'intercepto'];
   const INTERVALOS = ['positiva', 'negativa', 'crescente', 'decrescente'];
 
   const ICON_PREV = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -203,6 +277,7 @@
 
   const fmt = v => (Math.abs(v) < 1e-9 ? 0 : Number(v)).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
   const ease = t => 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   // ---------- geometria e desenho ----------
   function mapper(c, fn) {
@@ -239,14 +314,14 @@
     ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
   }
 
-  // Escreve um número com fundo da cor do cartão, para que ele não se misture à curva
-  function numLabel(ctx, c, txt, x, y, align) {
+  // Escreve um texto com fundo da cor do gráfico, para que ele não se misture à curva
+  function numLabel(ctx, c, txt, x, y, align, cor) {
     const w = ctx.measureText(txt).width;
     let left = align === 'right' ? x - w : align === 'left' ? x : x - w / 2;
     left = Math.max(2, Math.min(c.width - w - 2, left));
-    ctx.fillStyle = css('--card');
+    ctx.fillStyle = css('--fundo-grafico');
     ctx.fillRect(left - 3, y - 14, w + 6, 18);
-    ctx.fillStyle = css('--tinta');
+    ctx.fillStyle = cor || css('--tinta');
     ctx.textAlign = 'left';
     ctx.fillText(txt, left, y);
   }
@@ -421,6 +496,174 @@
     ctx.globalAlpha = 1;
   }
 
+  // ---------- rótulos em posição livre da curva ----------
+  // Cada rótulo testa candidatos em ordem de preferência e usa o primeiro que não toca a curva
+  const dentro = (c, q) => q.x >= 14 && q.x <= c.width - 14 && q.y >= 16 && q.y <= c.height - 6;
+
+  function candX(xa, y0) {
+    const out = [];
+    for (const dx of [0, -12, 12, -24, 24, -36, 36, -48, 48])
+      for (const dy of [18, -10, 34, -26]) out.push({ x: xa + dx, y: y0 + dy, align: 'center' });
+    return out;
+  }
+
+  function candY(ya, sx) {
+    const out = [];
+    for (const dy of [0, -14, 14, -28, 28, -42, 42])
+      out.push({ x: sx + 10, y: ya + dy, align: 'left' }, { x: sx - 10, y: ya + dy, align: 'right' });
+    return out;
+  }
+
+  // Locais para o rótulo "IR", espalhados pelo eixo escolhido
+  function candsIR(c, eixo, fixo) {
+    // frações evitam o centro, onde os eixos se cruzam
+    const fr = eixo === 'x' ? [0.25, 0.75, 0.15, 0.85, 0.35] : [0.25, 0.75, 0.15, 0.85, 0.35];
+    let out = [];
+    for (const p of fr) out = out.concat(eixo === 'x' ? candX(c.width * p, fixo) : candY(c.height * p, fixo));
+    return out.filter(q => dentro(c, q));
+  }
+
+  // Rótulo do "Local": abaixo do ponto de mínimo (s = 1) ou acima do de máximo (s = -1)
+  function candsLocal(c, px, py, s) {
+    const out = [];
+    for (const k of [0, 1, 2])
+      for (const dx of [0, 14, -14])
+        out.push({ x: px + dx, y: py + s * (18 + 16 * k), align: dx === 0 ? 'center' : dx > 0 ? 'left' : 'right' });
+    return out.filter(q => dentro(c, q));
+  }
+
+  // Pixels da curva no canvas, para testar sobreposição
+  function pixelsDaCurva(fn, c) {
+    if (fn.px && fn.pxW === c.width) return fn.px;
+    const M = mapper(c, fn), A = analyze(fn), pts = [];
+    for (let i = 0; i < A.xs.length; i++) {
+      if (Number.isFinite(A.ys[i])) pts.push({ x: M.X(A.xs[i]), y: M.Y(A.ys[i]) });
+    }
+    fn.px = pts; fn.pxW = c.width;
+    return pts;
+  }
+
+  // Escolhe e guarda (por função e por rótulo) a primeira posição livre da curva
+  function posicao(fn, c, ctx, chave, texto, cands) {
+    fn.pos = fn.pos || {};
+    const k = chave + '|' + texto;
+    if (fn.pos[k]) return fn.pos[k];
+    ctx.font = 'bold 15px system-ui';
+    const w = ctx.measureText(texto).width;
+    const pts = pixelsDaCurva(fn, c);
+    const livre = q => {
+      const l = q.align === 'right' ? q.x - w : q.align === 'left' ? q.x : q.x - w / 2;
+      return !pts.some(p => p.x > l - 4 && p.x < l + w + 4 && p.y > q.y - 16 && p.y < q.y + 6);
+    };
+    const esc = cands.find(livre) || cands[0] || { x: c.width / 2, y: c.height / 2, align: 'center' };
+    fn.pos[k] = esc;
+    return esc;
+  }
+
+  // Ponto do gráfico em que a ordenada vale v: máximo, mínimo ou extremidade (usado para as âncoras da imagem)
+  function pontoComY(fn, v) {
+    const A = analyze(fn);
+    const e = A.extrema.find(q => Math.abs(q.y - v) < 1e-3);
+    if (e) return e.x;
+    let best = null, dist = Infinity;
+    A.xs.forEach((x, i) => {
+      const d = Math.abs(A.ys[i] - v);
+      if (Number.isFinite(d) && d < dist) { dist = d; best = x; }
+    });
+    return best;
+  }
+
+  // Faixa do domínio (eixo x) ou da imagem (eixo y), com os limites e o rótulo "IR" quando não há limites
+  function drawFaixa(ctx, c, M, fn, eixo, par, prog, chave) {
+    const [a, b] = par;
+    const w = fn.win || WIN;
+    const lo = eixo === 'x' ? w.x0 : WIN.y0, hi = eixo === 'x' ? w.x1 : WIN.y1;
+    const ini = Math.max(a, lo), fim = Math.min(b, hi);
+    const pl = ease(prog / 0.6), pt = ease((prog - 0.5) / 0.5);
+    const pA = eixo === 'x' ? M.X(ini) : M.Y(ini), pB = eixo === 'x' ? M.X(fim) : M.Y(fim);
+    const fixo = eixo === 'x' ? M.Y(0) : M.X(0);
+    const ponta = pA + (pB - pA) * pl;
+
+    // o traço do intervalo é desenhado por último, por cima dos rótulos
+    const desenharSegmento = () => {
+      ctx.strokeStyle = SEG; ctx.lineWidth = 8; ctx.globalAlpha = .9;
+      ctx.beginPath();
+      if (eixo === 'x') { ctx.moveTo(pA, fixo); ctx.lineTo(ponta, fixo); }
+      else { ctx.moveTo(fixo, pA); ctx.lineTo(fixo, ponta); }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    };
+
+    // no domínio, âncoras saem dos pontos da curva e chegam ao eixo x (sem as extremidades infinitas)
+    if (eixo === 'x') {
+      const pa = ease(prog / 0.6);
+      for (const v of [a, b]) {
+        if (!Number.isFinite(v) || !Number.isFinite(fn.f(v))) continue;
+        const px = M.X(v), py = M.Y(fn.f(v)), cy = py + (fixo - py) * pa;
+        ctx.setLineDash([4, 4]); ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, cy); ctx.stroke();
+        ctx.setLineDash([]);
+        dot(ctx, px, cy, 6, CURVE);
+        dot(ctx, px, py, 6, CURVE);
+      }
+    }
+
+    // na imagem, âncoras saem dos pontos extremos e chegam ao eixo y (sem as extremidades infinitas)
+    if (eixo === 'y') {
+      const pa = ease(prog / 0.6);
+      for (const v of [a, b]) {
+        if (!Number.isFinite(v)) continue;
+        const xp = pontoComY(fn, v);
+        if (xp === null) continue;
+        const px = M.X(xp), py = M.Y(v), cx = px + (fixo - px) * pa;
+        ctx.setLineDash([4, 4]); ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(cx, py); ctx.stroke();
+        ctx.setLineDash([]);
+        dot(ctx, cx, py, 5, CURVE);
+        dot(ctx, px, py, 6, CURVE);
+      }
+    }
+
+    if (pt <= 0) { desenharSegmento(); return; }
+
+    ctx.globalAlpha = pt;
+    ctx.font = 'bold 15px system-ui';
+    if (a === -Infinity && b === Infinity) {
+      const pos = posicao(fn, c, ctx, chave + 'IR', 'IR', candsIR(c, eixo, fixo));
+      numLabel(ctx, c, 'IR', pos.x, pos.y, pos.align);
+    } else {
+      const extremos = [{ v: a, k: 'a' }, { v: b, k: 'b' }];
+      for (const e of extremos) {
+        const txt = e.v === -Infinity ? '−∞' : e.v === Infinity ? '+∞' : fmt(e.v);
+        const anc = Math.max(lo, Math.min(hi, e.v));
+        const p = eixo === 'x' ? M.X(anc) : M.Y(anc);
+        const cands = eixo === 'x' ? candX(p, fixo) : candY(p, fixo);
+        const pos = posicao(fn, c, ctx, chave + e.k, txt, cands.filter(q => dentro(c, q)));
+        numLabel(ctx, c, txt, pos.x, pos.y, pos.align);
+      }
+    }
+    desenharSegmento();
+    ctx.globalAlpha = 1;
+  }
+
+  // "Local" com o intervalo aberto em volta do x do ponto de máximo ou mínimo
+  function desenharLocal(ctx, c, M, fn, e, idx) {
+    const y0 = M.Y(0), px = M.X(e.x), py = M.Y(e.y);
+    const xl = M.X(e.x - 0.6), xr = M.X(e.x + 0.6);
+    ctx.strokeStyle = CURVE; ctx.lineWidth = 4; ctx.globalAlpha = .9;
+    ctx.beginPath(); ctx.moveTo(xl, y0); ctx.lineTo(xr, y0); ctx.stroke();
+    ctx.fillStyle = CURVE; ctx.font = 'bold 20px system-ui';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('(', xl, y0); ctx.fillText(')', xr, y0);
+    ctx.textBaseline = 'alphabetic';
+    ctx.globalAlpha = 1;
+
+    ctx.font = 'bold 15px system-ui';
+    const s = e.tipo === 'minimo' ? 1 : -1;
+    const pos = posicao(fn, c, ctx, 'loc' + idx, 'Local', candsLocal(c, px, py, s));
+    numLabel(ctx, c, 'Local', pos.x, pos.y, pos.align, CURVE);
+  }
+
   // Desenha a etapa com os destaques estáticos e as animações já feitas ou em andamento
   function drawGraph(st) {
     const fn = FUNCS[st.gi], state = st.states[st.gi];
@@ -435,8 +678,16 @@
       if (INTERVALOS.includes(p)) {
         ctx.lineWidth = 6; ctx.strokeStyle = CURVE;
         strokePath(ctx, A.xs, A.ys, M, A.flags[p]);
+      } else if (p === 'dominio' || p === 'imagem') {
+        // o gráfico inteiro é destacado
+        ctx.lineWidth = 6; ctx.strokeStyle = CURVE;
+        strokePath(ctx, A.xs, A.ys, M, null);
       } else if (p === 'maximo' || p === 'minimo') {
-        for (const e of A.extrema) if (e.tipo === p) dot(ctx, M.X(e.x), M.Y(e.y), 6, CURVE);
+        A.extrema.forEach((e, idx) => {
+          if (e.tipo !== p) return;
+          dot(ctx, M.X(e.x), M.Y(e.y), 6, CURVE);
+          if (fn.local) desenharLocal(ctx, c, M, fn, e, idx);
+        });
       } else if (p === 'raizes') {
         for (const r of A.roots) dot(ctx, M.X(r), M.Y(0), 6, CURVE);
       } else if (p === 'intercepto') {
@@ -452,6 +703,8 @@
       else if (state.done.has(p)) prog = 1;
       if (prog === null) continue;
       if (INTERVALOS.includes(p)) drawIntervals(ctx, c, M, fn, p, A, prog);
+      else if (p === 'dominio') drawFaixa(ctx, c, M, fn, 'x', fn.dom, prog, 'dom');
+      else if (p === 'imagem') drawFaixa(ctx, c, M, fn, 'y', fn.img, prog, 'img');
       else if (p === 'raizes') drawRoots(ctx, c, M, fn, A, prog);
       else if (p === 'intercepto') drawIntercept(ctx, c, M, fn, prog);
       else drawExtrema(ctx, c, M, p, A, prog);
@@ -491,60 +744,13 @@
     drawGraph(st);
   }
 
-  // ---------- navegação entre telas ----------
-  const track = document.getElementById('track');
-  let current = 0;
-  function go(i) {
-    current = Math.max(0, Math.min(track.children.length - 1, i));
-    track.style.transform = `translateX(-${current * 100}%)`;
-    track.children[current].scrollTop = 0;
-  }
-  document.querySelectorAll('[data-next]').forEach(b => b.onclick = () => go(current + 1));
-  document.querySelectorAll('[data-prev]').forEach(b => b.onclick = () => go(current - 1));
-  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(Number(b.dataset.go)));
-
-  // ---------- início: nome e avatar ----------
-  let avatar = null;
-  let studentName = '';
-  const avBox = document.getElementById('avatars');
-  const startBtn = document.getElementById('startBtn');
-  const nameInput = document.getElementById('studentName');
-  const avatarMsg = document.getElementById('avatarMsg');
-
-  function updateStart() {
-    startBtn.disabled = !(avatar && studentName);
-    if (!studentName) avatarMsg.textContent = 'Digite seu nome e escolha um avatar para continuar.';
-    else if (!avatar) avatarMsg.textContent = 'Escolha um avatar para continuar.';
-    else avatarMsg.textContent = 'Pronto! Clique em Começar.';
-  }
-
-  nameInput.addEventListener('input', () => {
-    studentName = nameInput.value.trim();
-    updateStart();
-  });
-
-  AVATARS.forEach(emoji => {
-    const b = document.createElement('button');
-    b.className = 'avatar'; b.textContent = emoji; b.setAttribute('aria-pressed', 'false');
-    b.onclick = () => {
-      avatar = emoji;
-      avBox.querySelectorAll('.avatar').forEach(x => x.setAttribute('aria-pressed', 'false'));
-      b.setAttribute('aria-pressed', 'true');
-      updateStart();
-    };
-    avBox.appendChild(b);
-  });
-  updateStart();
-
-  // ---------- etapas da atividade (uma tela por etapa) ----------
-  ETAPAS.forEach((et, s) => {
-    const sec = document.createElement('section');
-    sec.className = 'slide';
-    sec.innerHTML = `
+  // Monta a estrutura de uma etapa dentro de um contêiner (tela ou demonstração)
+  function montarEtapa(container, nome) {
+    container.innerHTML = `
       <div class="wrap">
         <header class="stage-top">
           <p class="titulo">Descubra com o gráfico</p>
-          <p class="identificacao">${et.nome}</p>
+          <p class="identificacao">${nome}</p>
           <p class="instrucao" hidden>Clique em cada gráfico.</p>
         </header>
         <div class="stage-mid">
@@ -565,49 +771,259 @@
           <canvas width="360" height="360" aria-label="Gráfico da função"></canvas>
         </div>
       </div>`;
-    track.appendChild(sec);
-
-    const st = {
-      s, canvas: sec.querySelector('canvas'), hint: sec.querySelector('.instrucao'),
-      graphName: sec.querySelector('.graph-name'), gi: 0, active: new Set(),
+    return {
+      canvas: container.querySelector('canvas'),
+      hint: container.querySelector('.instrucao'),
+      graphName: container.querySelector('.graph-name'),
+      nameEl: container.querySelector('.identificacao'),
+      botoes: container.querySelector('.botoes'),
+      prev: container.querySelector('[data-stage-prev]'),
+      next: container.querySelector('[data-stage-next]'),
+      graphPrev: container.querySelector('[data-graph-prev]'),
+      graphNext: container.querySelector('[data-graph-next]'),
+      gi: 0, active: new Set(),
       states: FUNCS.map(() => ({ done: new Set(), current: null, running: false, token: 0 }))
     };
+  }
 
-    // setas de etapa: a da esquerda some na primeira etapa; a da direita some na última
-    const prevBtn = sec.querySelector('[data-stage-prev]');
-    const nextBtn = sec.querySelector('[data-stage-next]');
-    prevBtn.hidden = s === 0;
-    nextBtn.hidden = s === ETAPAS.length - 1;
-    prevBtn.onclick = () => go(2 + s - 1);
-    nextBtn.onclick = () => go(2 + s + 1);
-
-    // botões da etapa: apenas um fica ativo por vez
-    const box = sec.querySelector('.botoes');
-    et.botoes.forEach(key => {
+  // Cria os botões de uma etapa; apenas um fica ativo por vez
+  function setBotoes(st, keys, aoMudar) {
+    st.botoes.innerHTML = '';
+    keys.forEach(key => {
       const b = document.createElement('button');
       b.textContent = LABELS[key]; b.setAttribute('aria-pressed', 'false');
       b.onclick = () => {
         const wasOn = st.active.has(key);
         st.active.clear();
-        box.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', 'false'));
+        st.botoes.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', 'false'));
         if (!wasOn) { st.active.add(key); b.setAttribute('aria-pressed', 'true'); }
         st.hint.hidden = st.active.size === 0;
         resetStage(st);
+        if (st.registrar) st.registrar();
+        if (aoMudar) aoMudar(key, !wasOn);
       };
-      box.appendChild(b);
+      st.botoes.appendChild(b);
     });
+  }
+
+  function mostrarGrafico(st) {
+    st.graphName.textContent = `Gráfico ${st.gi + 1}`;
+    drawGraph(st);
+  }
+
+  // ---------- navegação entre telas ----------
+  const track = document.getElementById('track');
+  let current = 0;
+  function go(i) {
+    current = Math.max(0, Math.min(track.children.length - 1, i));
+    track.style.transform = `translateX(-${current * 100}%)`;
+    track.children[current].scrollTop = 0;
+    if (current === 1) iniciarDemonstracao();
+  }
+  document.querySelectorAll('[data-next]').forEach(b => b.onclick = () => go(current + 1));
+  document.querySelectorAll('[data-prev]').forEach(b => b.onclick = () => go(current - 1));
+  document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(Number(b.dataset.go)));
+
+  // ---------- início: nome e carinha ----------
+  let mood = null;
+  let studentName = '';
+  const avBox = document.getElementById('avatars');
+  const startBtn = document.getElementById('startBtn');
+  const nameInput = document.getElementById('studentName');
+  const avatarMsg = document.getElementById('avatarMsg');
+
+  function updateStart() {
+    startBtn.disabled = !(mood && studentName);
+    if (!studentName) avatarMsg.textContent = 'Digite seu nome e escolha uma carinha para continuar.';
+    else if (!mood) avatarMsg.textContent = 'Escolha uma carinha para continuar.';
+    else avatarMsg.textContent = 'Pronto! Clique em Começar.';
+  }
+
+  nameInput.addEventListener('input', () => {
+    studentName = nameInput.value.trim();
+    updateStart();
+  });
+
+  MOODS.forEach(m => {
+    const b = document.createElement('button');
+    b.className = 'avatar'; b.setAttribute('aria-pressed', 'false');
+    b.setAttribute('aria-label', m.nome);
+    b.innerHTML = `<span class="rosto">${m.rosto}</span><small>${m.nome}</small>`;
+    b.onclick = () => {
+      mood = m.id;
+      avBox.querySelectorAll('.avatar').forEach(x => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true');
+      updateStart();
+    };
+    avBox.appendChild(b);
+  });
+  updateStart();
+
+  // ---------- mini-tutorial ----------
+  const tut = document.getElementById('tut');
+  const demoEl = document.getElementById('demo');
+  const legenda = document.getElementById('legenda');
+  const contador = document.getElementById('contador');
+  const destaque = document.getElementById('destaque');
+  const dedo = document.getElementById('dedo');
+  const toque = document.getElementById('toque');
+  const comecarBtn = document.getElementById('comecarBtn');
+  const pularBtn = document.getElementById('pular');
+  const verDeNovoBtn = document.getElementById('verDeNovo');
+
+  const demo = montarEtapa(demoEl, ETAPAS[1].nome);   // a demonstração usa a etapa "Sinais"
+  let rodada = 0;          // invalida a sequência anterior ao recomeçar
+  let emPratica = false;   // true quando é a vez do estudante
+  let concluiu = false;
+
+  function setLegenda(texto, passo) {
+    legenda.querySelector('span').textContent = texto;
+    contador.textContent = passo || '';
+  }
+
+  // Posiciona o destaque em volta de um elemento do tutorial
+  function destacar(el) {
+    if (!el) { destaque.hidden = true; return; }
+    const r = el.getBoundingClientRect(), t = tut.getBoundingClientRect();
+    destaque.hidden = false;
+    Object.assign(destaque.style, {
+      left: (r.left - t.left - 6) + 'px', top: (r.top - t.top - 6) + 'px',
+      width: (r.width + 12) + 'px', height: (r.height + 12) + 'px'
+    });
+  }
+
+  // Leva o dedo ao centro do elemento
+  function moverDedo(el) {
+    const r = el.getBoundingClientRect(), t = tut.getBoundingClientRect();
+    const x = r.left - t.left + r.width / 2, y = r.top - t.top + r.height / 2;
+    dedo.hidden = false;
+    dedo.style.transform = `translate(${x - 10}px, ${y - 6}px)`;
+  }
+
+  // Mostra o toque (ondas) no centro do elemento
+  function tocar(el) {
+    const r = el.getBoundingClientRect(), t = tut.getBoundingClientRect();
+    toque.style.left = (r.left - t.left + r.width / 2) + 'px';
+    toque.style.top = (r.top - t.top + r.height / 2) + 'px';
+    toque.classList.remove('on');
+    void toque.offsetWidth;
+    toque.classList.add('on');
+  }
+
+  // Clique do estudante no gráfico da demonstração
+  demo.canvas.addEventListener('click', () => {
+    if (demo.active.size) playGraph(demo);
+    if (emPratica && !concluiu && demo.active.has('negativa')) {
+      concluiu = true;
+      setLegenda('Pronto! Agora toque em Começar.');
+      comecarBtn.disabled = false;
+    }
+  });
+  demo.graphNext.onclick = () => { demo.gi = (demo.gi + 1) % FUNCS.length; mostrarGrafico(demo); };
+  demo.graphPrev.onclick = () => { demo.gi = (demo.gi + FUNCS.length - 1) % FUNCS.length; mostrarGrafico(demo); };
+
+  // Monta a etapa demonstrativa (Sinais ou Extremos), sem navegar entre telas
+  function usarEtapa(s) {
+    demo.nameEl.textContent = ETAPAS[s].nome;
+    demo.active.clear();
+    demo.hint.hidden = true;
+    setBotoes(demo, ETAPAS[s].botoes, (key, on) => {
+      if (emPratica) setLegenda(on ? 'Agora toque no gráfico.' : `Sua vez: toque em "Negativa" e depois no gráfico.`);
+    });
+    resetStage(demo);
+  }
+
+  // Sequência da demonstração: o dedo toca cada parte da tela
+  async function executarDemonstracao(id) {
+    const vivo = () => id === rodada;
+    usarEtapa(1);
+    demo.gi = 0; mostrarGrafico(demo);
+
+    setLegenda('Aqui você vê a etapa e o que deve fazer.', '1 de 5');
+    destacar(demoEl.querySelector('.stage-top'));
+    dedo.hidden = true;
+    await sleep(2600); if (!vivo()) return;
+
+    const seta = demoEl.querySelector('[data-stage-next]');
+    setLegenda('As setas mudam de etapa. Você escolhe qual visitar.', '2 de 5');
+    destacar(seta); moverDedo(seta);
+    await sleep(700); if (!vivo()) return;
+    tocar(seta); usarEtapa(2); mostrarGrafico(demo);
+    await sleep(1200); if (!vivo()) return;
+
+    // "Mínimo" aparece na demonstração porque a parábola do gráfico 1 tem mínimo, mostrando o efeito de forma clara
+    const botao = demo.botoes.querySelectorAll('button')[1];
+    setLegenda('Os botões mostram o que destacar no gráfico.', '3 de 5');
+    destacar(botao); moverDedo(botao);
+    await sleep(700); if (!vivo()) return;
+    tocar(botao); botao.click();
+    await sleep(1400); if (!vivo()) return;
+
+    setLegenda('Toque no gráfico para ver a explicação.', '4 de 5');
+    destacar(demo.canvas); moverDedo(demo.canvas);
+    await sleep(700); if (!vivo()) return;
+    tocar(demo.canvas); playGraph(demo);
+    await sleep(2800); if (!vivo()) return;
+
+    const proximoGrafico = demo.graphNext;
+    setLegenda('Use as setas para ver outros gráficos.', '5 de 5');
+    destacar(proximoGrafico); moverDedo(proximoGrafico);
+    await sleep(700); if (!vivo()) return;
+    tocar(proximoGrafico); demo.gi = (demo.gi + 1) % FUNCS.length; mostrarGrafico(demo);
+    await sleep(1800); if (!vivo()) return;
+
+    praticar();
+  }
+
+  // Vez do estudante: ele precisa tocar em "Negativa" e depois no gráfico
+  function praticar() {
+    rodada++;
+    emPratica = true; concluiu = false;
+    demoEl.classList.remove('passivo');
+    destacar(null); dedo.hidden = true;
+    usarEtapa(1); demo.gi = 0; mostrarGrafico(demo);
+    setLegenda('Sua vez: toque em "Negativa" e depois no gráfico.', 'Prática');
+    comecarBtn.disabled = true;
+  }
+
+  function iniciarDemonstracao() {
+    rodada++;
+    emPratica = false; concluiu = false;
+    demoEl.classList.add('passivo');
+    comecarBtn.disabled = true;
+    executarDemonstracao(rodada);
+  }
+
+  pularBtn.onclick = () => { rodada++; praticar(); };
+  verDeNovoBtn.onclick = () => iniciarDemonstracao();
+
+  // ---------- etapas da atividade (uma tela por etapa) ----------
+  ETAPAS.forEach((et, s) => {
+    const sec = document.createElement('section');
+    sec.className = 'slide';
+    track.appendChild(sec);
+    const st = montarEtapa(sec, et.nome);
+
+    // setas de etapa: a da esquerda some na primeira etapa; a da direita some na última
+    st.prev.hidden = s === 0;
+    // a última etapa do bloco 1 também tem avanço, que leva ao bloco 2
+    st.next.hidden = false;
+    st.prev.onclick = () => go(2 + s - 1);
+    st.next.onclick = () => { st.next.classList.remove('pulsar'); go(2 + s + 1); };
+
+    // quando o estudante percorre os 6 gráficos nos dois botões, o avanço de etapa pulsa
+    st.visitados = new Set();
+    st.registrar = () => {
+      if (!st.active.size) return;
+      st.visitados.add(st.gi + '|' + [...st.active][0]);
+      if (st.visitados.size === FUNCS.length * et.botoes.length) st.next.classList.add('pulsar');
+    };
+
+    setBotoes(st, et.botoes);
 
     // navegação entre gráficos: circular (1 volta ao 6 e o 6 avança ao 1)
-    const showGraph = () => {
-      st.graphName.textContent = `Gráfico ${st.gi + 1}`;
-      drawGraph(st);
-    };
-    sec.querySelector('[data-graph-prev]').onclick = () => {
-      st.gi = (st.gi + FUNCS.length - 1) % FUNCS.length; showGraph();
-    };
-    sec.querySelector('[data-graph-next]').onclick = () => {
-      st.gi = (st.gi + 1) % FUNCS.length; showGraph();
-    };
+    st.graphPrev.onclick = () => { st.gi = (st.gi + FUNCS.length - 1) % FUNCS.length; mostrarGrafico(st); st.registrar(); };
+    st.graphNext.onclick = () => { st.gi = (st.gi + 1) % FUNCS.length; mostrarGrafico(st); st.registrar(); };
 
     st.canvas.addEventListener('click', () => {
       if (st.active.size) playGraph(st);
@@ -615,6 +1031,274 @@
 
     drawGraph(st);
   });
+
+  // ---------- Bloco 2: domínio e imagem por arraste ----------
+  const B2W = 360, B2H = 288;
+  const B2 = { x0: -5, x1: 5, y0: -4, y1: 4 };
+  const B2_GRAFICOS = [
+    { f: x => (-1 / 3) * (x - 2) * (x + 4), tex: 'f(x) = −⅓(x − 2)(x + 4)' },
+    { f: x => -Math.abs((2 / 3) * (x - 2)) + 2, tex: 'g(x) = −|⅔(x − 2)| + 2' },
+    { f: x => Math.sqrt(x + 4) - 2, tex: 'h(x) = √(x + 4) − 2' }
+  ];
+  // Extremidades corretas: [domínio, imagem] para cada gráfico (±Infinity = sem limite)
+  const B2_ALVOS = [
+    [[{ t: -Infinity }, { t: Infinity }], [{ t: -Infinity }, { t: Infinity }], [{ t: -4 }, { t: Infinity }]],
+    [[{ t: 3 }, { t: -Infinity }], [{ t: 2 }, { t: -Infinity }], [{ t: -2 }, { t: Infinity }]]
+  ];
+  const B2_BASE = 2 + ETAPAS.length;   // índice da primeira tela do bloco 2
+  const b2X = x => (x - B2.x0) / (B2.x1 - B2.x0) * B2W;
+  const b2Y = y => B2H - (y - B2.y0) / (B2.y1 - B2.y0) * B2H;
+  const b2InvX = px => B2.x0 + px / B2W * (B2.x1 - B2.x0);
+  const b2InvY = py => B2.y0 + (B2H - py) / B2H * (B2.y1 - B2.y0);
+  const b2Pos = (s, v) => (s === 0 ? { x: b2X(v), y: b2Y(0) } : { x: b2X(0), y: b2Y(v) });
+  const b2Limites = s => (s === 0 ? [B2.x0, B2.x1] : [B2.y0, B2.y1]);
+
+  // Estado de cada gráfico: dois pontos; claim = índice da extremidade agarrada (-1 = livre)
+  const b2Estados = [0, 1].map(() => B2_GRAFICOS.map(() => ({
+    pts: [{ v: 0, claim: -1 }, { v: 0, claim: -1 }], done: false, celebrou: false
+  })));
+
+  // Comemoração: breve som e confetes (cerca de 1,5 s)
+  const festaCv = document.createElement('canvas');
+  festaCv.id = 'festa';
+  document.body.appendChild(festaCv);
+  function tocarSom() {
+    try {
+      const au = new (window.AudioContext || window.webkitAudioContext)();
+      const t0 = au.currentTime;
+      [[523.25, 0], [659.25, 0.13], [783.99, 0.26]].forEach(([freq, dt]) => {
+        const o = au.createOscillator(), g = au.createGain();
+        o.type = 'triangle'; o.frequency.value = freq;
+        o.connect(g); g.connect(au.destination);
+        g.gain.setValueAtTime(0.0001, t0 + dt);
+        g.gain.exponentialRampToValueAtTime(0.25, t0 + dt + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.25);
+        o.start(t0 + dt); o.stop(t0 + dt + 0.3);
+      });
+      setTimeout(() => au.close(), 1200);
+    } catch (e) { /* sem som disponível: a comemoração continua visual */ }
+  }
+
+  function celebrar() {
+    tocarSom();
+    festaCv.width = innerWidth; festaCv.height = innerHeight;
+    const g = festaCv.getContext('2d');
+    const cores = ['#473366', '#FF6633', '#FAD400', '#E07415', '#975FA8', '#1a7f4b'];
+    const parts = Array.from({ length: 110 }, () => ({
+      x: festaCv.width / 2 + (Math.random() - 0.5) * 80, y: festaCv.height * 0.45,
+      vx: (Math.random() - 0.5) * 12, vy: -Math.random() * 10 - 4,
+      r: Math.random() * 5 + 3, c: cores[Math.floor(Math.random() * cores.length)],
+      rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3
+    }));
+    const t0 = performance.now();
+    const quadro = now => {
+      g.clearRect(0, 0, festaCv.width, festaCv.height);
+      parts.forEach(p => {
+        p.vy += 0.35; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        g.save(); g.translate(p.x, p.y); g.rotate(p.rot);
+        g.fillStyle = p.c; g.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
+        g.restore();
+      });
+      if (now - t0 < 1500) requestAnimationFrame(quadro);
+      else g.clearRect(0, 0, festaCv.width, festaCv.height);
+    };
+    requestAnimationFrame(quadro);
+  }
+
+  // Desenha o gráfico, o segmento e os pontos
+  function b2Draw(st) {
+    const c = st.canvas, ctx = c.getContext('2d');
+    const G = B2_GRAFICOS[st.gi], est = b2Estados[st.s][st.gi], alvos = B2_ALVOS[st.s][st.gi];
+    const [lo, hi] = b2Limites(st.s);
+    ctx.clearRect(0, 0, B2W, B2H);
+
+    // grade e marcas inteiras de 1 em 1
+    ctx.strokeStyle = css('--grade'); ctx.lineWidth = 1;
+    for (let x = B2.x0; x <= B2.x1; x++) { ctx.beginPath(); ctx.moveTo(b2X(x), 0); ctx.lineTo(b2X(x), B2H); ctx.stroke(); }
+    for (let y = B2.y0; y <= B2.y1; y++) { ctx.beginPath(); ctx.moveTo(0, b2Y(y)); ctx.lineTo(B2W, b2Y(y)); ctx.stroke(); }
+    ctx.strokeStyle = css('--eixo'); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, b2Y(0)); ctx.lineTo(B2W, b2Y(0));
+    ctx.moveTo(b2X(0), 0); ctx.lineTo(b2X(0), B2H); ctx.stroke();
+
+    ctx.fillStyle = css('--tinta-fraca'); ctx.font = '12px system-ui';
+    ctx.strokeStyle = css('--eixo'); ctx.lineWidth = 1.5;
+    for (let x = B2.x0; x <= B2.x1; x++) {
+      if (x === 0) continue;
+      ctx.beginPath(); ctx.moveTo(b2X(x), b2Y(0) - 3); ctx.lineTo(b2X(x), b2Y(0) + 3); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.fillText(String(x), b2X(x), b2Y(0) + 16);
+    }
+    for (let y = B2.y0; y <= B2.y1; y++) {
+      if (y === 0) continue;
+      ctx.beginPath(); ctx.moveTo(b2X(0) - 3, b2Y(y)); ctx.lineTo(b2X(0) + 3, b2Y(y)); ctx.stroke();
+      ctx.textAlign = 'right'; ctx.fillText(String(y), b2X(0) - 6, b2Y(y) + 4);
+    }
+
+    // curva
+    ctx.strokeStyle = CURVE; ctx.lineWidth = 3; ctx.beginPath();
+    let pen = false;
+    for (let i = 0; i <= 300; i++) {
+      const x = B2.x0 + i * (B2.x1 - B2.x0) / 300, y = G.f(x);
+      if (!Number.isFinite(y)) { pen = false; continue; }
+      if (!pen) { ctx.moveTo(b2X(x), b2Y(y)); pen = true; } else ctx.lineTo(b2X(x), b2Y(y));
+    }
+    ctx.stroke();
+
+    // segmento entre as duas extremidades (infinito leva até a borda)
+    const valores = est.pts.map((p, i) => (p.claim >= 0 ? alvos[p.claim].t : p.v));
+    const clamp = v => Math.max(lo, Math.min(hi, v));
+    const a = clamp(Math.min(...valores)), b = clamp(Math.max(...valores));
+    const A1 = b2Pos(st.s, a), B1 = b2Pos(st.s, b);
+    ctx.strokeStyle = SEG; ctx.lineWidth = 8; ctx.globalAlpha = .9;
+    ctx.beginPath(); ctx.moveTo(A1.x, A1.y); ctx.lineTo(B1.x, B1.y); ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // pontos livres e valores das extremidades agarradas
+    ctx.font = 'bold 14px system-ui';
+    est.pts.forEach(p => {
+      if (p.claim >= 0) {
+        const t = alvos[p.claim].t;
+        if (st.s === 0) {
+          if (t === -Infinity) numLabel(ctx, c, '−∞', b2X(B2.x0) + 4, b2Y(0) - 12, 'left');
+          else if (t === Infinity) numLabel(ctx, c, '+∞', b2X(B2.x1) - 4, b2Y(0) - 12, 'right');
+          else numLabel(ctx, c, fmt(t), b2X(t), b2Y(0) + 26, 'center');
+        } else {
+          if (t === -Infinity) numLabel(ctx, c, '−∞', b2X(0) + 12, b2Y(B2.y0) - 6, 'left');
+          else if (t === Infinity) numLabel(ctx, c, '+∞', b2X(0) + 12, b2Y(B2.y1) + 14, 'left');
+          else numLabel(ctx, c, fmt(t), b2X(0) + 12, b2Y(t) + 4, 'left');
+        }
+      } else {
+        const q = b2Pos(st.s, p.v);
+        dot(ctx, q.x, q.y, 10, '#ffffff');
+        dot(ctx, q.x, q.y, 7, CURVE);
+      }
+    });
+  }
+
+  // Atualiza textos, bloqueios de navegação e o desenho
+  function b2Render(st) {
+    const est = b2Estados[st.s][st.gi];
+    st.graphName.textContent = `Gráfico ${st.gi + 1}`;
+    st.formula.textContent = B2_GRAFICOS[st.gi].tex;
+    st.instr.textContent = est.done ? 'Pronto! Você já pode avançar.'
+      : (st.s === 0 ? 'Arraste os dois pontos até as extremidades do domínio.'
+        : 'Arraste os dois pontos até as extremidades da imagem.');
+    st.gPrev.disabled = !est.done; st.gNext.disabled = !est.done;
+    st.prev.disabled = !est.done; st.next.disabled = !est.done;
+    // com os três gráficos concluídos, o avanço da etapa pisca
+    st.next.classList.toggle('pulsar', b2Estados[st.s].every(e => e.done));
+    b2Draw(st);
+  }
+
+  // Verifica se o ponto agarrou alguma extremidade ainda livre
+  function b2Tentar(st, idx) {
+    const est = b2Estados[st.s][st.gi], alvos = B2_ALVOS[st.s][st.gi], p = est.pts[idx];
+    const [lo, hi] = b2Limites(st.s);
+    alvos.forEach((al, j) => {
+      if (p.claim >= 0 || est.pts.some(q => q.claim === j)) return;
+      const ok = al.t === -Infinity ? p.v <= lo + 0.4
+        : al.t === Infinity ? p.v >= hi - 0.4
+          : Math.abs(p.v - al.t) < 0.4;
+      if (ok) p.claim = j;
+    });
+    if (p.claim >= 0) st.drag = null;   // o ponto agarrado fica preso
+    if (!est.done && est.pts.every(q => q.claim >= 0)) {
+      est.done = true;
+      if (!est.celebrou) { est.celebrou = true; celebrar(); }
+    }
+    b2Render(st);
+  }
+
+  // Telas do bloco 2: domínio (s = 0) e imagem (s = 1)
+  [0, 1].forEach(s => {
+    const sec = document.createElement('section');
+    sec.className = 'slide';
+    track.appendChild(sec);
+    sec.innerHTML = `
+      <div class="wrap">
+        <header class="stage-top">
+          <p class="titulo">Bloco 2 · Descubra com o gráfico</p>
+          <p class="identificacao">${s === 0 ? 'Domínio' : 'Imagem'}</p>
+          <p class="instrucao"></p>
+        </header>
+        <div class="stage-mid">
+          <div class="setas">
+            <button class="icon" data-stage-prev aria-label="Etapa anterior">${ICON_PREV}</button>
+            <button class="icon" data-stage-next aria-label="Próxima etapa">${ICON_NEXT}</button>
+          </div>
+        </div>
+        <div class="stage-base">
+          <div class="graph-nav">
+            <div class="setas">
+              <button class="icon" data-graph-prev aria-label="Gráfico anterior">${ICON_PREV}</button>
+              <button class="icon" data-graph-next aria-label="Próximo gráfico">${ICON_NEXT}</button>
+            </div>
+            <h2 class="graph-name">Gráfico 1</h2>
+          </div>
+          <p class="formula"></p>
+          <canvas width="${B2W}" height="${B2H}" aria-label="Gráfico para arrastar os pontos"></canvas>
+        </div>
+      </div>`;
+
+    const st = {
+      s, gi: 0, drag: null,
+      canvas: sec.querySelector('canvas'),
+      instr: sec.querySelector('.instrucao'),
+      graphName: sec.querySelector('.graph-name'),
+      formula: sec.querySelector('.formula'),
+      prev: sec.querySelector('[data-stage-prev]'),
+      next: sec.querySelector('[data-stage-next]'),
+      gPrev: sec.querySelector('[data-graph-prev]'),
+      gNext: sec.querySelector('[data-graph-next]')
+    };
+    // domínio não tem etapa anterior no bloco 2; imagem leva à tela final
+    st.prev.hidden = s === 0;
+    st.next.hidden = false;
+    st.prev.onclick = () => { if (b2Estados[st.s][st.gi].done) go(B2_BASE + s - 1); };
+    st.next.onclick = () => { if (b2Estados[st.s][st.gi].done) go(B2_BASE + s + 1); };
+    st.gPrev.onclick = () => { if (b2Estados[st.s][st.gi].done) { st.gi = (st.gi + 2) % B2_GRAFICOS.length; b2Render(st); } };
+    st.gNext.onclick = () => { if (b2Estados[st.s][st.gi].done) { st.gi = (st.gi + 1) % B2_GRAFICOS.length; b2Render(st); } };
+
+    const coords = e => {
+      const r = st.canvas.getBoundingClientRect();
+      return { x: (e.clientX - r.left) * B2W / r.width, y: (e.clientY - r.top) * B2H / r.height };
+    };
+    st.canvas.addEventListener('pointerdown', e => {
+      const est = b2Estados[st.s][st.gi], q = coords(e);
+      let best = -1, bd = Infinity;
+      est.pts.forEach((p, i) => {
+        if (p.claim >= 0) return;
+        const pos = b2Pos(st.s, p.v), d = Math.hypot(pos.x - q.x, pos.y - q.y);
+        if (d < bd) { bd = d; best = i; }
+      });
+      if (best >= 0 && bd < 28) { st.drag = best; st.canvas.setPointerCapture(e.pointerId); }
+    });
+    st.canvas.addEventListener('pointermove', e => {
+      if (st.drag === null) return;
+      const est = b2Estados[st.s][st.gi], q = coords(e), [lo, hi] = b2Limites(st.s);
+      const v = st.s === 0 ? b2InvX(q.x) : b2InvY(q.y);
+      est.pts[st.drag].v = Math.max(lo, Math.min(hi, v));
+      b2Tentar(st, st.drag);
+    });
+    const soltar = () => { st.drag = null; };
+    st.canvas.addEventListener('pointerup', soltar);
+    st.canvas.addEventListener('pointercancel', soltar);
+
+    b2Render(st);
+  });
+
+  // Tela final, após a imagem
+  const fim = document.createElement('section');
+  fim.className = 'slide';
+  fim.innerHTML = `
+    <div class="wrap">
+      <h1>Fim das atividades</h1>
+      <p class="lead">Obrigado por participar.</p>
+      <div class="actions" style="justify-content:center">
+        <button class="primary" id="recomecar">Começar de novo</button>
+      </div>
+    </div>`;
+  track.appendChild(fim);
+  fim.querySelector('#recomecar').onclick = () => go(0);
 })();
 </script>
 </body>
