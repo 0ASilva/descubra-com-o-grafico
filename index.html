@@ -126,6 +126,8 @@
     border: 1.5px solid var(--roxo); border-radius: 10px; color: var(--tinta);
   }
   .qbotoes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .teclado { display: grid; grid-template-columns: repeat(4, 52px); gap: 6px; justify-content: center; }
+  .teclado button { width: 52px; min-height: 44px; padding: 0; font-size: 1.1rem; }
   .fim-botoes { display: grid; gap: 10px; max-width: 320px; margin: 16px auto; }
   #festa { position: fixed; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
   @media (prefers-reduced-motion: reduce) {
@@ -1181,7 +1183,8 @@
 
   // Lê um número digitado (aceita vírgula e fração, como 8/3)
   function lerNumero(s) {
-    const t = String(s).trim();
+    // o teclado da tela usa o sinal "−" (U+2212); o número é lido com o hífen comum
+    const t = String(s).replace(/−/g, '-').trim();
     if (!t) return null;
     if (t.includes('/')) {
       const [a, b] = t.split('/').map(p => Number(p.trim().replace(',', '.')));
@@ -1330,6 +1333,27 @@
         if (v !== null && Math.abs(v - et.alvos[st.gi][0]) < 0.02) b2Acertou(st);
       };
     }
+    if (et.tipo !== 'extremo') { q.insertAdjacentHTML('beforeend', TECLADO_HTML); ligarTeclado(q); }
+  }
+
+  // Teclado próprio para as respostas numéricas (com sinal de menos, vírgula e barra)
+  const TECLADO_HTML = `<div class="teclado">${['1', '2', '3', '⌫', '4', '5', '6', '−', '7', '8', '9', '/', '0', ','].map(t => `<button type="button" data-t="${t}">${t}</button>`).join('')}</div>`;
+  function ligarTeclado(q) {
+    const campos = [...q.querySelectorAll('.resp')];
+    let ativo = campos[0];
+    campos.forEach(c => {
+      c.setAttribute('inputmode', 'none');   // não abre o teclado do aparelho
+      // em celular (tela de toque), o campo só recebe o teclado da tela; no computador, digitação normal
+      c.readOnly = matchMedia('(pointer: coarse)').matches;
+      c.addEventListener('focus', () => { ativo = c; });
+    });
+    q.querySelectorAll('.teclado button').forEach(b => {
+      b.onclick = () => {
+        if (!ativo) return;
+        if (b.dataset.t === '⌫') ativo.value = ativo.value.slice(0, -1);
+        else ativo.value += b.dataset.t;
+      };
+    });
   }
 
   // Resposta correta: comemoração, a tela some e o estudante segue (exceto nos extremos)
@@ -1378,6 +1402,8 @@
     const [lo, hi] = b2Limites(et.eixo);
     alvos.forEach((al, j) => {
       if (p.claim >= 0 || est.pts.some(q => q.claim === j)) return;
+      // em etapas de intervalos, cada par de pontos só marca as extremidades do seu intervalo
+      if (et.seg && Math.floor(j / 2) !== Math.floor(idx / 2)) return;
       const ok = al === -INF ? p.v <= lo + 0.4
         : al === INF ? p.v >= hi - 0.4
           : Math.abs(p.v - al) < 0.4;
