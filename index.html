@@ -114,6 +114,19 @@
     0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 102, 51, .7); }
     50% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(255, 102, 51, 0); }
   }
+  .gwrap { position: relative; max-width: 420px; margin: 0 auto; }
+  .qbox {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 12px; padding: 16px; border-radius: 14px; text-align: center;
+    background: rgba(255, 253, 245, 0.9); color: var(--tinta); font-weight: 600;
+  }
+  .qbox[hidden] { display: none; }
+  .qbox input {
+    width: 76px; font: inherit; padding: 6px; text-align: center; background: #ffffff;
+    border: 1.5px solid var(--roxo); border-radius: 10px; color: var(--tinta);
+  }
+  .qbotoes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .fim-botoes { display: grid; gap: 10px; max-width: 320px; margin: 16px auto; }
   #festa { position: fixed; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
   @media (prefers-reduced-motion: reduce) {
     .icon.pulsar { animation: none; box-shadow: 0 0 0 3px #FF6633; }
@@ -994,7 +1007,8 @@
     executarDemonstracao(rodada);
   }
 
-  pularBtn.onclick = () => { rodada++; praticar(); };
+  // Pular leva direto à primeira atividade do bloco 1
+  pularBtn.onclick = () => { rodada++; go(2); };
   verDeNovoBtn.onclick = () => iniciarDemonstracao();
 
   // ---------- etapas da atividade (uma tela por etapa) ----------
@@ -1032,31 +1046,69 @@
     drawGraph(st);
   });
 
-  // ---------- Bloco 2: domínio e imagem por arraste ----------
-  const B2W = 360, B2H = 288;
-  const B2 = { x0: -5, x1: 5, y0: -4, y1: 4 };
+  // ---------- Bloco 2: pontos sobre os eixos, extremos, raízes e intercepto ----------
+  // Janela: x de -6 a 6 e y com a mesma escala (quadrada, unidades iguais)
+  const B2W = 360, B2H = 360;
+  const B2 = { x0: -6, x1: 6, y0: -6, y1: 6 };
+  const INF = Infinity;
   const B2_GRAFICOS = [
     { f: x => (-1 / 3) * (x - 2) * (x + 4), tex: 'f(x) = −⅓(x − 2)(x + 4)' },
     { f: x => -Math.abs((2 / 3) * (x - 2)) + 2, tex: 'g(x) = −|⅔(x − 2)| + 2' },
     { f: x => Math.sqrt(x + 4) - 2, tex: 'h(x) = √(x + 4) − 2' }
   ];
-  // Extremidades corretas: [domínio, imagem] para cada gráfico (±Infinity = sem limite)
-  const B2_ALVOS = [
-    [[{ t: -Infinity }, { t: Infinity }], [{ t: -Infinity }, { t: Infinity }], [{ t: -4 }, { t: Infinity }]],
-    [[{ t: 3 }, { t: -Infinity }], [{ t: 2 }, { t: -Infinity }], [{ t: -2 }, { t: Infinity }]]
+
+  // Etapas do bloco 2. alvos[g] = extremidades corretas do gráfico g (±INF = sem limite).
+  // seg: desenha o segmento entre os pares de pontos. rotulos: mostra o valor ao agarrar.
+  // pergunta: depois de agarrar, o estudante responde uma pergunta.
+  const B2_ETAPAS = [
+    { id: 'dominio', nome: 'Domínio', eixo: 'x', seg: true, rotulos: true,
+      alvos: [[-INF, INF], [-INF, INF], [-4, INF]],
+      instr: ['Arraste os dois pontos até as extremidades do domínio.'] },
+    { id: 'imagem', nome: 'Imagem', eixo: 'y', seg: true, rotulos: true,
+      alvos: [[3, -INF], [2, -INF], [-2, INF]],
+      instr: ['Arraste os dois pontos até as extremidades da imagem.'] },
+    { id: 'positivo', nome: 'Sinal positivo', eixo: 'x', seg: true, rotulos: true,
+      alvos: [[-4, 2], [-1, 5], [0, INF]],
+      instr: ['Arraste os pontos até os limites dos intervalos em que a função é positiva.'] },
+    { id: 'negativo', nome: 'Sinal negativo', eixo: 'x', seg: true, rotulos: true,
+      alvos: [[-INF, -4, 2, INF], [-INF, -1, 5, INF], [-4, 0]],
+      instr: ['Arraste os pontos até os limites dos intervalos em que a função é negativa.'] },
+    { id: 'extremos', nome: 'Extremos', tipo: 'extremo', pergunta: true,
+      ext: [{ x: -1, y: 3, tipo: 'maximo' }, { x: 2, y: 2, tipo: 'maximo' }, { x: -4, y: -2, tipo: 'minimo' }],
+      instr: ['Arraste a cruz pelo eixo y até a altura de um máximo ou mínimo.'] },
+    { id: 'crescente', nome: 'Crescente', eixo: 'x', seg: true, rotulos: true,
+      alvos: [[-INF, -1], [-INF, 2], [-4, INF]],
+      instr: ['Arraste os pontos até os limites dos intervalos em que a função é crescente.'] },
+    { id: 'decrescente', nome: 'Decrescente', eixo: 'x', seg: true, rotulos: true,
+      alvos: [[-1, INF], [2, INF], null],
+      instr: ['Arraste os pontos até os limites dos intervalos em que a função é decrescente.',
+        'Este gráfico não tem intervalo decrescente.'] },
+    { id: 'raizes', nome: 'Raízes', eixo: 'x', seg: false, rotulos: false, pergunta: true,
+      alvos: [[-4, 2], [-1, 5], [0]], inicio: [0, 0, 4],
+      instr: ['Arraste os pontos até as raízes da função.'] },
+    { id: 'intercepto', nome: 'Intercepto em Y', eixo: 'y', seg: false, rotulos: true, pergunta: true,
+      alvos: [[8 / 3], [2 / 3], [0]], inicio: [0, 0, 4],
+      instr: ['Arraste o ponto até o intercepto com o eixo y.'] }
   ];
   const B2_BASE = 2 + ETAPAS.length;   // índice da primeira tela do bloco 2
+
   const b2X = x => (x - B2.x0) / (B2.x1 - B2.x0) * B2W;
   const b2Y = y => B2H - (y - B2.y0) / (B2.y1 - B2.y0) * B2H;
   const b2InvX = px => B2.x0 + px / B2W * (B2.x1 - B2.x0);
   const b2InvY = py => B2.y0 + (B2H - py) / B2H * (B2.y1 - B2.y0);
-  const b2Pos = (s, v) => (s === 0 ? { x: b2X(v), y: b2Y(0) } : { x: b2X(0), y: b2Y(v) });
-  const b2Limites = s => (s === 0 ? [B2.x0, B2.x1] : [B2.y0, B2.y1]);
+  const b2Pos = (eixo, v) => (eixo === 'x' ? { x: b2X(v), y: b2Y(0) } : { x: b2X(0), y: b2Y(v) });
+  const b2Limites = eixo => (eixo === 'x' ? [B2.x0, B2.x1] : [B2.y0, B2.y1]);
 
-  // Estado de cada gráfico: dois pontos; claim = índice da extremidade agarrada (-1 = livre)
-  const b2Estados = [0, 1].map(() => B2_GRAFICOS.map(() => ({
-    pts: [{ v: 0, claim: -1 }, { v: 0, claim: -1 }], done: false, celebrou: false
-  })));
+  // Estado por etapa e gráfico. pronto = pontos agarrados (ou cruz no extremo); done = etapa concluída
+  function b2EstadoNovo(k, g) {
+    const et = B2_ETAPAS[k];
+    if (et.tipo === 'extremo') return { cruz: 0, pronto: false, done: false, celebrou: false };
+    const alvos = et.alvos[g];
+    if (!alvos) return { pts: [], pronto: true, done: true, celebrou: true };   // nada a marcar
+    const ini = et.inicio ? et.inicio[g] : 0;
+    return { pts: alvos.map(() => ({ v: ini, claim: -1 })), pronto: false, done: false, celebrou: false };
+  }
+  const b2Estados = B2_ETAPAS.map((et, k) => B2_GRAFICOS.map((_, g) => b2EstadoNovo(k, g)));
 
   // Comemoração: breve som e confetes (cerca de 1,5 s)
   const festaCv = document.createElement('canvas');
@@ -1105,11 +1157,46 @@
     requestAnimationFrame(quadro);
   }
 
-  // Desenha o gráfico, o segmento e os pontos
+  // Raiz de f(x) = v mais próxima de xref (null se não houver)
+  function b2RaizMaisProxima(f, v, xref) {
+    if (Math.abs(f(xref) - v) < 1e-9) return xref;
+    const N = 800, L = B2.x0, R = B2.x1, h = (R - L) / N;
+    let best = null, bd = Infinity;
+    let xa = L, ya = f(L) - v;
+    for (let i = 1; i <= N; i++) {
+      const xb = L + i * h, yb = f(xb) - v;
+      if (Number.isFinite(ya) && Number.isFinite(yb) && (ya > 0) !== (yb > 0)) {
+        let lo = xa, hi = xb;
+        for (let k = 0; k < 50; k++) {
+          const m = (lo + hi) / 2;
+          if ((f(m) - v > 0) === (f(lo) - v > 0)) lo = m; else hi = m;
+        }
+        const r = (lo + hi) / 2, d = Math.abs(r - xref);
+        if (d < bd) { bd = d; best = r; }
+      }
+      xa = xb; ya = yb;
+    }
+    return best;
+  }
+
+  // Lê um número digitado (aceita vírgula e fração, como 8/3)
+  function lerNumero(s) {
+    const t = String(s).trim();
+    if (!t) return null;
+    if (t.includes('/')) {
+      const [a, b] = t.split('/').map(p => Number(p.trim().replace(',', '.')));
+      return b ? a / b : null;
+    }
+    const v = Number(t.replace(',', '.'));
+    return Number.isFinite(v) ? v : null;
+  }
+
+  // Desenha o gráfico, os segmentos, os pontos e a cruz
   function b2Draw(st) {
+    const k = st.k, et = B2_ETAPAS[k], est = b2Estados[k][st.gi], G = B2_GRAFICOS[st.gi];
     const c = st.canvas, ctx = c.getContext('2d');
-    const G = B2_GRAFICOS[st.gi], est = b2Estados[st.s][st.gi], alvos = B2_ALVOS[st.s][st.gi];
-    const [lo, hi] = b2Limites(st.s);
+    const alvos = et.alvos ? et.alvos[st.gi] : null;
+    const [lo, hi] = b2Limites(et.eixo || 'x');
     ctx.clearRect(0, 0, B2W, B2H);
 
     // grade e marcas inteiras de 1 em 1
@@ -1143,73 +1230,170 @@
     }
     ctx.stroke();
 
-    // segmento entre as duas extremidades (infinito leva até a borda)
-    const valores = est.pts.map((p, i) => (p.claim >= 0 ? alvos[p.claim].t : p.v));
-    const clamp = v => Math.max(lo, Math.min(hi, v));
-    const a = clamp(Math.min(...valores)), b = clamp(Math.max(...valores));
-    const A1 = b2Pos(st.s, a), B1 = b2Pos(st.s, b);
-    ctx.strokeStyle = SEG; ctx.lineWidth = 8; ctx.globalAlpha = .9;
-    ctx.beginPath(); ctx.moveTo(A1.x, A1.y); ctx.lineTo(B1.x, B1.y); ctx.stroke();
-    ctx.globalAlpha = 1;
+    // extremo: cruz sobre o eixo y e ponto sobre a curva, com a mesma ordenada
+    if (et.tipo === 'extremo') {
+      const ext = et.ext[st.gi];
+      const cx = b2X(0), cy = b2Y(est.cruz);
+      const xp = est.pronto ? ext.x : b2RaizMaisProxima(G.f, est.cruz, ext.x);
+      if (xp !== null) {
+        const px = b2X(xp), py = b2Y(est.cruz);
+        ctx.setLineDash([4, 4]); ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+        ctx.setLineDash([]);
+        dot(ctx, px, py, 6, CURVE);
+      }
+      // cruz branca com contorno; pisca enquanto não foi agarrada
+      ctx.globalAlpha = est.pronto ? 1 : (st.blinkOn ? 1 : 0.25);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = CURVE; ctx.lineWidth = 7; ctx.beginPath();
+      ctx.moveTo(cx - 10, cy); ctx.lineTo(cx + 10, cy); ctx.moveTo(cx, cy - 10); ctx.lineTo(cx, cy + 10);
+      ctx.stroke();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3.5; ctx.beginPath();
+      ctx.moveTo(cx - 10, cy); ctx.lineTo(cx + 10, cy); ctx.moveTo(cx, cy - 10); ctx.lineTo(cx, cy + 10);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      return;
+    }
+
+    // segmentos entre pares de extremidades (intervalos)
+    if (et.seg && alvos) {
+      const clamp = v => Math.max(lo, Math.min(hi, v));
+      for (let i = 0; i + 1 < est.pts.length; i += 2) {
+        const vals = [est.pts[i], est.pts[i + 1]].map(p => (p.claim >= 0 ? alvos[p.claim] : p.v));
+        const a = clamp(Math.min(...vals)), b = clamp(Math.max(...vals));
+        const A1 = b2Pos(et.eixo, a), B1 = b2Pos(et.eixo, b);
+        ctx.strokeStyle = SEG; ctx.lineWidth = 8; ctx.globalAlpha = .9;
+        ctx.beginPath(); ctx.moveTo(A1.x, A1.y); ctx.lineTo(B1.x, B1.y); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // intercepto: o valor de y do ponto de interseção já aparece antes do arraste
+    if (et.id === 'intercepto' && alvos && est.pts.every(p => p.claim < 0)) {
+      ctx.font = 'bold 14px system-ui';
+      numLabel(ctx, c, fmt(alvos[0]), b2X(0) + 12, b2Y(alvos[0]) - 6, 'left');
+    }
 
     // pontos livres e valores das extremidades agarradas
     ctx.font = 'bold 14px system-ui';
     est.pts.forEach(p => {
       if (p.claim >= 0) {
-        const t = alvos[p.claim].t;
-        if (st.s === 0) {
-          if (t === -Infinity) numLabel(ctx, c, '−∞', b2X(B2.x0) + 4, b2Y(0) - 12, 'left');
-          else if (t === Infinity) numLabel(ctx, c, '+∞', b2X(B2.x1) - 4, b2Y(0) - 12, 'right');
+        const t = alvos[p.claim];
+        if (!et.rotulos) {
+          // sem rótulo (raízes): o ponto permanece no lugar em que foi agarrado
+          if (Number.isFinite(t)) { const q = b2Pos(et.eixo, t); dot(ctx, q.x, q.y, 7, CURVE); }
+          return;
+        }
+        if (et.eixo === 'x') {
+          if (t === -INF) numLabel(ctx, c, '−∞', b2X(B2.x0) + 4, b2Y(0) - 12, 'left');
+          else if (t === INF) numLabel(ctx, c, '+∞', b2X(B2.x1) - 4, b2Y(0) - 12, 'right');
           else numLabel(ctx, c, fmt(t), b2X(t), b2Y(0) + 26, 'center');
         } else {
-          if (t === -Infinity) numLabel(ctx, c, '−∞', b2X(0) + 12, b2Y(B2.y0) - 6, 'left');
-          else if (t === Infinity) numLabel(ctx, c, '+∞', b2X(0) + 12, b2Y(B2.y1) + 14, 'left');
+          if (t === -INF) numLabel(ctx, c, '−∞', b2X(0) + 12, b2Y(B2.y0) - 6, 'left');
+          else if (t === INF) numLabel(ctx, c, '+∞', b2X(0) + 12, b2Y(B2.y1) + 14, 'left');
           else numLabel(ctx, c, fmt(t), b2X(0) + 12, b2Y(t) + 4, 'left');
         }
       } else {
-        const q = b2Pos(st.s, p.v);
+        const q = b2Pos(et.eixo, p.v);
         dot(ctx, q.x, q.y, 10, '#ffffff');
         dot(ctx, q.x, q.y, 7, CURVE);
       }
     });
   }
 
-  // Atualiza textos, bloqueios de navegação e o desenho
+  // Texto da pergunta de cada etapa, com as caixas de resposta
+  function b2MontarPergunta(st) {
+    const k = st.k, et = B2_ETAPAS[k], q = st.qbox;
+    if (et.tipo === 'extremo') {
+      const e = et.ext[st.gi];
+      q.innerHTML = `<p>y = ${fmt(e.y)} é máximo ou mínimo?</p>
+        <div class="qbotoes"><button data-r="maximo">Máximo</button><button data-r="minimo">Mínimo</button></div>`;
+      q.querySelectorAll('[data-r]').forEach(b => {
+        b.onclick = () => { if (b.dataset.r === e.tipo) b2Acertou(st); };
+      });
+    } else if (et.id === 'raizes') {
+      const dois = st.gi < 2;
+      q.innerHTML = dois
+        ? `<p><input class="resp" inputmode="decimal" aria-label="primeira raiz"> e <input class="resp" inputmode="decimal" aria-label="segunda raiz"> são raízes da função.</p><button class="primary" data-ok>Confirmar</button>`
+        : `<p><input class="resp" inputmode="decimal" aria-label="raiz"> é uma raiz da função.</p><button class="primary" data-ok>Confirmar</button>`;
+      q.querySelector('[data-ok]').onclick = () => {
+        const vals = [...q.querySelectorAll('.resp')].map(i => lerNumero(i.value));
+        if (vals.some(v => v === null)) return;
+        const alvo = et.alvos[st.gi].slice().sort((a, b) => a - b);
+        const ord = vals.slice().sort((a, b) => a - b);
+        if (ord.length === alvo.length && ord.every((v, i) => Math.abs(v - alvo[i]) < 0.05)) b2Acertou(st);
+      };
+    } else {
+      q.innerHTML = `<p><input class="resp" inputmode="decimal" aria-label="valor"> é imagem do número 0 por esta função.</p><button class="primary" data-ok>Confirmar</button>`;
+      q.querySelector('[data-ok]').onclick = () => {
+        const v = lerNumero(q.querySelector('.resp').value);
+        if (v !== null && Math.abs(v - et.alvos[st.gi][0]) < 0.02) b2Acertou(st);
+      };
+    }
+  }
+
+  // Resposta correta: comemoração, a tela some e o estudante segue (exceto nos extremos)
+  function b2Acertou(st) {
+    const k = st.k, g = st.gi, et = B2_ETAPAS[k];
+    b2Estados[k][g].done = true;
+    celebrar();
+    b2Render(st);
+    if (et.tipo === 'extremo') return;
+    setTimeout(() => {
+      if (current !== B2_BASE + k || st.gi !== g) return;
+      if (g < B2_GRAFICOS.length - 1) { st.gi = g + 1; b2Render(st); }
+      else go(B2_BASE + k + 1);
+    }, 1700);
+  }
+
+  // Atualiza textos, bloqueios, pulsar, pergunta e desenho
   function b2Render(st) {
-    const est = b2Estados[st.s][st.gi];
+    const k = st.k, et = B2_ETAPAS[k], est = b2Estados[k][st.gi];
     st.graphName.textContent = `Gráfico ${st.gi + 1}`;
     st.formula.textContent = B2_GRAFICOS[st.gi].tex;
+    const semIntervalo = et.alvos && !et.alvos[st.gi];
     st.instr.textContent = est.done ? 'Pronto! Você já pode avançar.'
-      : (st.s === 0 ? 'Arraste os dois pontos até as extremidades do domínio.'
-        : 'Arraste os dois pontos até as extremidades da imagem.');
+      : (semIntervalo ? et.instr[1] : et.instr[0]);
     st.gPrev.disabled = !est.done; st.gNext.disabled = !est.done;
     st.prev.disabled = !est.done; st.next.disabled = !est.done;
-    // com os três gráficos concluídos, o avanço da etapa pisca
-    st.next.classList.toggle('pulsar', b2Estados[st.s].every(e => e.done));
+    // com todos os gráficos concluídos, o avanço da etapa pisca
+    st.next.classList.toggle('pulsar', b2Estados[k].every(e => e.done));
+
+    // pergunta: aparece depois que os pontos (ou a cruz) foram agarrados
+    const mostrar = (et.pergunta || et.tipo === 'extremo') && est.pronto && !est.done;
+    if (mostrar) {
+      const chave = st.gi;
+      if (st.qKey !== chave) { b2MontarPergunta(st); st.qKey = chave; }
+      st.qbox.hidden = false;
+    } else {
+      st.qbox.hidden = true;
+      st.qKey = null;
+    }
     b2Draw(st);
   }
 
-  // Verifica se o ponto agarrou alguma extremidade ainda livre
+  // Verifica se o ponto agarrou uma extremidade ainda livre
   function b2Tentar(st, idx) {
-    const est = b2Estados[st.s][st.gi], alvos = B2_ALVOS[st.s][st.gi], p = est.pts[idx];
-    const [lo, hi] = b2Limites(st.s);
+    const k = st.k, et = B2_ETAPAS[k], est = b2Estados[k][st.gi], alvos = et.alvos[st.gi], p = est.pts[idx];
+    const [lo, hi] = b2Limites(et.eixo);
     alvos.forEach((al, j) => {
       if (p.claim >= 0 || est.pts.some(q => q.claim === j)) return;
-      const ok = al.t === -Infinity ? p.v <= lo + 0.4
-        : al.t === Infinity ? p.v >= hi - 0.4
-          : Math.abs(p.v - al.t) < 0.4;
+      const ok = al === -INF ? p.v <= lo + 0.4
+        : al === INF ? p.v >= hi - 0.4
+          : Math.abs(p.v - al) < 0.4;
       if (ok) p.claim = j;
     });
     if (p.claim >= 0) st.drag = null;   // o ponto agarrado fica preso
-    if (!est.done && est.pts.every(q => q.claim >= 0)) {
-      est.done = true;
+    if (!est.pronto && est.pts.every(q => q.claim >= 0)) {
+      est.pronto = true;
+      if (!et.pergunta) est.done = true;
       if (!est.celebrou) { est.celebrou = true; celebrar(); }
     }
     b2Render(st);
   }
 
-  // Telas do bloco 2: domínio (s = 0) e imagem (s = 1)
-  [0, 1].forEach(s => {
+  // Telas do bloco 2: uma por etapa
+  const b2Telas = B2_ETAPAS.map((et, k) => {
     const sec = document.createElement('section');
     sec.className = 'slide';
     track.appendChild(sec);
@@ -1217,7 +1401,7 @@
       <div class="wrap">
         <header class="stage-top">
           <p class="titulo">Bloco 2 · Descubra com o gráfico</p>
-          <p class="identificacao">${s === 0 ? 'Domínio' : 'Imagem'}</p>
+          <p class="identificacao">${et.nome}</p>
           <p class="instrucao"></p>
         </header>
         <div class="stage-mid">
@@ -1235,13 +1419,17 @@
             <h2 class="graph-name">Gráfico 1</h2>
           </div>
           <p class="formula"></p>
-          <canvas width="${B2W}" height="${B2H}" aria-label="Gráfico para arrastar os pontos"></canvas>
+          <div class="gwrap">
+            <canvas width="${B2W}" height="${B2H}" aria-label="Gráfico para interagir"></canvas>
+            <div class="qbox" hidden></div>
+          </div>
         </div>
       </div>`;
 
     const st = {
-      s, gi: 0, drag: null,
+      k, gi: 0, drag: null, qKey: null, blinkOn: true,
       canvas: sec.querySelector('canvas'),
+      qbox: sec.querySelector('.qbox'),
       instr: sec.querySelector('.instrucao'),
       graphName: sec.querySelector('.graph-name'),
       formula: sec.querySelector('.formula'),
@@ -1250,32 +1438,46 @@
       gPrev: sec.querySelector('[data-graph-prev]'),
       gNext: sec.querySelector('[data-graph-next]')
     };
-    // domínio não tem etapa anterior no bloco 2; imagem leva à tela final
-    st.prev.hidden = s === 0;
-    st.next.hidden = false;
-    st.prev.onclick = () => { if (b2Estados[st.s][st.gi].done) go(B2_BASE + s - 1); };
-    st.next.onclick = () => { if (b2Estados[st.s][st.gi].done) go(B2_BASE + s + 1); };
-    st.gPrev.onclick = () => { if (b2Estados[st.s][st.gi].done) { st.gi = (st.gi + 2) % B2_GRAFICOS.length; b2Render(st); } };
-    st.gNext.onclick = () => { if (b2Estados[st.s][st.gi].done) { st.gi = (st.gi + 1) % B2_GRAFICOS.length; b2Render(st); } };
+    st.prev.hidden = k === 0;
+    st.prev.onclick = () => { if (b2Estados[k][st.gi].done) go(B2_BASE + k - 1); };
+    st.next.onclick = () => { if (b2Estados[k][st.gi].done) go(B2_BASE + k + 1); };
+    st.gPrev.onclick = () => { if (b2Estados[k][st.gi].done) { st.gi = (st.gi + B2_GRAFICOS.length - 1) % B2_GRAFICOS.length; b2Render(st); } };
+    st.gNext.onclick = () => { if (b2Estados[k][st.gi].done) { st.gi = (st.gi + 1) % B2_GRAFICOS.length; b2Render(st); } };
 
     const coords = e => {
       const r = st.canvas.getBoundingClientRect();
       return { x: (e.clientX - r.left) * B2W / r.width, y: (e.clientY - r.top) * B2H / r.height };
     };
     st.canvas.addEventListener('pointerdown', e => {
-      const est = b2Estados[st.s][st.gi], q = coords(e);
+      const est = b2Estados[k][st.gi], et = B2_ETAPAS[k], q = coords(e);
+      if (est.done || est.pronto) return;
+      if (et.tipo === 'extremo') {
+        if (Math.hypot(b2X(0) - q.x, b2Y(est.cruz) - q.y) < 28) { st.drag = 0; st.canvas.setPointerCapture(e.pointerId); }
+        return;
+      }
       let best = -1, bd = Infinity;
       est.pts.forEach((p, i) => {
         if (p.claim >= 0) return;
-        const pos = b2Pos(st.s, p.v), d = Math.hypot(pos.x - q.x, pos.y - q.y);
+        const pos = b2Pos(et.eixo, p.v), d = Math.hypot(pos.x - q.x, pos.y - q.y);
         if (d < bd) { bd = d; best = i; }
       });
       if (best >= 0 && bd < 28) { st.drag = best; st.canvas.setPointerCapture(e.pointerId); }
     });
     st.canvas.addEventListener('pointermove', e => {
       if (st.drag === null) return;
-      const est = b2Estados[st.s][st.gi], q = coords(e), [lo, hi] = b2Limites(st.s);
-      const v = st.s === 0 ? b2InvX(q.x) : b2InvY(q.y);
+      const est = b2Estados[k][st.gi], et = B2_ETAPAS[k], q = coords(e);
+      if (et.tipo === 'extremo') {
+        const ext = et.ext[st.gi];
+        const v = Math.max(B2.y0, Math.min(B2.y1, b2InvY(q.y)));
+        est.cruz = v;
+        if (Math.abs(v - ext.y) < 0.2) {          // a cruz agarra a altura do extremo
+          est.cruz = ext.y; est.pronto = true; st.drag = null;
+        }
+        b2Render(st);
+        return;
+      }
+      const [lo, hi] = b2Limites(et.eixo);
+      const v = et.eixo === 'x' ? b2InvX(q.x) : b2InvY(q.y);
       est.pts[st.drag].v = Math.max(lo, Math.min(hi, v));
       b2Tentar(st, st.drag);
     });
@@ -1283,22 +1485,47 @@
     st.canvas.addEventListener('pointerup', soltar);
     st.canvas.addEventListener('pointercancel', soltar);
 
+    st.qbox.addEventListener('pointerdown', e => e.stopPropagation());
     b2Render(st);
+    return st;
   });
 
-  // Tela final, após a imagem
+  // Pisca da cruz da etapa Extremos, enquanto ela não foi agarrada
+  setInterval(() => {
+    b2Telas.forEach(st => {
+      if (B2_ETAPAS[st.k].tipo !== 'extremo') return;
+      st.blinkOn = !st.blinkOn;
+      if (current === B2_BASE + st.k && !b2Estados[st.k][st.gi].pronto) b2Draw(st);
+    });
+  }, 600);
+
+  // Tela ao terminar o bloco 2
   const fim = document.createElement('section');
   fim.className = 'slide';
   fim.innerHTML = `
-    <div class="wrap">
-      <h1>Fim das atividades</h1>
-      <p class="lead">Obrigado por participar.</p>
-      <div class="actions" style="justify-content:center">
-        <button class="primary" id="recomecar">Começar de novo</button>
+    <div class="wrap center">
+      <h1>Bloco 2 concluído</h1>
+      <p class="lead">Escolha o que fazer agora.</p>
+      <div class="fim-botoes">
+        <button class="primary" data-fim="bloco1">Retornar para Bloco 1</button>
+        <button class="primary" data-fim="bloco2">Retornar para Bloco 2</button>
+        <button class="primary" data-fim="bloco3">Seguir para Bloco 3</button>
+        <button class="primary" data-fim="sair">Sair</button>
       </div>
+      <p class="note" id="saida"></p>
     </div>`;
   track.appendChild(fim);
-  fim.querySelector('#recomecar').onclick = () => go(0);
+  fim.querySelectorAll('[data-fim]').forEach(b => {
+    b.onclick = () => {
+      const saida = fim.querySelector('#saida');
+      const acao = b.dataset.fim;
+      if (acao === 'bloco1') go(2);
+      else if (acao === 'bloco2') go(B2_BASE);
+      else if (acao === 'bloco3') saida.textContent = 'O Bloco 3 ainda não está disponível.';
+      else { window.close(); saida.textContent = 'Feche esta aba do navegador para sair.'; }
+    };
+  });
+
 })();
 </script>
 </body>
