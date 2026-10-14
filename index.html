@@ -43,9 +43,18 @@
 
   /* Cartões das seções */
   .card-sec {
-    background: var(--card); border: 1px solid var(--borda); border-radius: 14px;
+    background: var(--papel); border: 1px solid var(--borda); border-radius: 14px;
     padding: 16px; margin-top: 16px;
   }
+  .b3-tab3 { margin: 0 auto 8px; border-collapse: collapse; font-size: .95rem; }
+  .b3-tab3 th, .b3-tab3 td { border: 1px solid var(--borda); padding: 4px 3px; text-align: center; background: #fff; }
+  .b3-tab3 th { color: var(--roxo); font-size: .85rem; }
+  .b3-tab3 .resp { width: 23px; padding: 2px 0; font: inherit; font-size: .9rem; text-align: center; border: 1.5px solid var(--roxo); border-radius: 6px; background: #fff; color: var(--tinta); }
+  .b3c { display: block; margin: 0 auto; background: var(--papel); width: 100%; max-width: 360px; height: auto; }
+  .b3-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-width: 420px; margin: 0 auto 8px; text-align: center; }
+  .b3-grade .cab { font-weight: 700; color: var(--roxo); font-size: .85rem; }
+  .b3-grade > div.cel { padding: 8px 4px; border: 1px solid var(--borda); border-radius: 10px; background: #fff; font-size: .95rem; }
+  .b3-grade .resp { width: 46px; padding: 3px; font: inherit; text-align: center; border: 1.5px solid var(--roxo); border-radius: 8px; background: #fff; color: var(--tinta); }
   .card-sec h2 { font-size: 1.05rem; margin: 0 0 8px; color: var(--roxo); display: flex; align-items: center; gap: 8px; }
   .num {
     width: 26px; height: 26px; border-radius: 50%; background: var(--roxo); color: #ffffff;
@@ -126,6 +135,11 @@
     border: 1.5px solid var(--roxo); border-radius: 10px; color: var(--tinta);
   }
   .qbotoes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .qbox input.ativo { border-color: var(--laranja); animation: piscaCampo 1s steps(1) infinite; }
+  @keyframes piscaCampo {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(255, 102, 51, .45); }
+    50% { box-shadow: 0 0 0 3px rgba(255, 102, 51, 0); }
+  }
   .teclado { display: grid; grid-template-columns: repeat(4, 52px); gap: 6px; justify-content: center; }
   .teclado button { width: 52px; min-height: 44px; padding: 0; font-size: 1.1rem; }
   .fim-botoes { display: grid; gap: 10px; max-width: 320px; margin: 16px auto; }
@@ -834,6 +848,7 @@
     track.style.transform = `translateX(-${current * 100}%)`;
     track.children[current].scrollTop = 0;
     if (current === 1) iniciarDemonstracao();
+    if (current === B3_INI) b3Iniciar(); else b3Parar();
   }
   document.querySelectorAll('[data-next]').forEach(b => b.onclick = () => go(current + 1));
   document.querySelectorAll('[data-prev]').forEach(b => b.onclick = () => go(current - 1));
@@ -1341,12 +1356,15 @@
   function ligarTeclado(q) {
     const campos = [...q.querySelectorAll('.resp')];
     let ativo = campos[0];
+    // o campo que recebe os toques do teclado da tela fica destacado, com um pisca que faz o papel do cursor
+    const marcar = c => campos.forEach(x => x.classList.toggle('ativo', x === c));
     campos.forEach(c => {
       c.setAttribute('inputmode', 'none');   // não abre o teclado do aparelho
       // em celular (tela de toque), o campo só recebe o teclado da tela; no computador, digitação normal
       c.readOnly = matchMedia('(pointer: coarse)').matches;
-      c.addEventListener('focus', () => { ativo = c; });
+      c.addEventListener('focus', () => { ativo = c; marcar(c); });
     });
+    marcar(ativo);
     q.querySelectorAll('.teclado button').forEach(b => {
       b.onclick = () => {
         if (!ativo) return;
@@ -1547,10 +1565,598 @@
       const acao = b.dataset.fim;
       if (acao === 'bloco1') go(2);
       else if (acao === 'bloco2') go(B2_BASE);
-      else if (acao === 'bloco3') saida.textContent = 'O Bloco 3 ainda não está disponível.';
+      else if (acao === 'bloco3') go(B3_INI);
       else { window.close(); saida.textContent = 'Feche esta aba do navegador para sair.'; }
     };
   });
+
+  // ---------- Bloco 3: atalho de teste e tela de instrução com animação ----------
+  const B3_INI = track.children.length;   // tela de instrução do bloco 3
+
+  // atalho de teste na tela inicial
+  const cardInicial = track.children[0].querySelector('.card-sec');
+  const atalho = document.createElement('button');
+  atalho.textContent = 'Ir direto ao Bloco 3 (teste)';
+  atalho.style.marginBottom = '12px';
+  atalho.onclick = () => go(B3_INI);
+  cardInicial.insertBefore(atalho, cardInicial.firstChild);
+
+  // Tela de instrução com a animação de exploração
+  const b3Tela = document.createElement('section');
+  b3Tela.className = 'slide';
+  b3Tela.innerHTML = `
+    <div class="wrap">
+      <header class="stage-top">
+        <p class="titulo">Bloco 3 · Descubra com o gráfico</p>
+        <p class="identificacao">Reconhecimento e familiarização</p>
+      </header>
+      <div class="card-sec">
+        <p class="b3-texto">Neste bloco você vai explorar gráficos a partir dos valores do domínio e da imagem. Os gráficos são representados com a seguinte convenção:</p>
+        <ul class="b3-lista">
+          <li>pontos cheios na ponta da linha que é o gráfico significam o primeiro ou o último ponto do gráfico;</li>
+          <li>ponto vazio na ponta significa que o gráfico termina sem que este ponto pertença a ele;</li>
+          <li>se ao passar por um ponto do gráfico este ponto se mostrar em destaque, ele é um ponto extremo, ou um intercepto com o eixo x ou y.</li>
+        </ul>
+        <div class="gwrap"><canvas class="b3c" width="360" height="300" aria-label="Animação de exploração do gráfico"></canvas></div>
+      </div>
+      <div class="actions">
+        <button data-prev>← Voltar</button>
+        <button class="primary" data-b3-continuar>Continuar →</button>
+      </div>
+    </div>`;
+  track.appendChild(b3Tela);
+  b3Tela.querySelector('[data-prev]').onclick = () => go(B3_INI - 1);
+  b3Tela.querySelector('[data-b3-continuar]').onclick = () => go(B3_INI + 1);
+
+  // Placeholder da primeira etapa do bloco 3 (ainda não implementada)
+  const b3Etapa1 = document.createElement('section');
+  b3Etapa1.className = 'slide';
+  b3Etapa1.innerHTML = `
+    <div class="wrap center">
+      <h1>Bloco 3 · Etapa 1</h1>
+      <p class="lead">Valor da função e Interceptos</p>
+      <p class="note">Em construção.</p>
+      <div class="actions" style="justify-content:center"><button data-prev>← Voltar</button></div>
+    </div>`;
+  track.appendChild(b3Etapa1);
+  b3Etapa1.querySelector('[data-prev]').onclick = () => go(B3_INI);
+
+  // Animação: a cruz do eixo x percorre o domínio (−3 a 4) e mostra os pontos destacados
+  const B3F = x => -0.5 * Math.abs(x + 2) + 2;   // f(x) = −½|x + 2| + 2, domínio [−3, 4]
+  const B3_DOM = [-3, 4];
+  const B3_CICLO = 10000;   // ms
+  const b3c = b3Tela.querySelector('.b3c');
+  const b3ctx = b3c.getContext('2d');
+  const b3X = x => (x + 4.5) * 40;     // 40 px por unidade (escala igual nos dois eixos)
+  const b3Y = y => 300 - (y + 2.5) * 40;
+
+  function b3Desenhar(t) {
+    const ctx = b3ctx, W = b3c.width, H = b3c.height;
+    const T = t % B3_CICLO;
+    const s = Math.max(0, Math.min(1, (T - 1000) / 6000));   // percurso de −3 a 4
+    const x = B3_DOM[0] + (B3_DOM[1] - B3_DOM[0]) * s;
+    ctx.clearRect(0, 0, W, H);
+
+    // grade e eixos
+    ctx.strokeStyle = css('--grade'); ctx.lineWidth = 1;
+    for (let v = -4; v <= 4; v++) { ctx.beginPath(); ctx.moveTo(b3X(v), 0); ctx.lineTo(b3X(v), H); ctx.stroke(); }
+    for (let v = -2; v <= 5; v++) { ctx.beginPath(); ctx.moveTo(0, b3Y(v)); ctx.lineTo(W, b3Y(v)); ctx.stroke(); }
+    ctx.strokeStyle = css('--eixo'); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, b3Y(0)); ctx.lineTo(W, b3Y(0)); ctx.moveTo(b3X(0), 0); ctx.lineTo(b3X(0), H); ctx.stroke();
+
+    // gráfico no domínio
+    ctx.strokeStyle = CURVE; ctx.lineWidth = 3; ctx.beginPath();
+    for (let i = 0; i <= 140; i++) {
+      const xx = B3_DOM[0] + i * (B3_DOM[1] - B3_DOM[0]) / 140;
+      if (i === 0) ctx.moveTo(b3X(xx), b3Y(B3F(xx))); else ctx.lineTo(b3X(xx), b3Y(B3F(xx)));
+    }
+    ctx.stroke();
+
+    // extremidades do domínio: cheias (o gráfico inclui os dois extremos)
+    dot(ctx, b3X(-3), b3Y(B3F(-3)), 6, CURVE);
+    dot(ctx, b3X(4), b3Y(B3F(4)), 6, CURVE);
+
+    // pontos destacados conforme a cruz passa por eles
+    const anel = (px, py) => { ctx.strokeStyle = SEG; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI * 2); ctx.stroke(); };
+    if (x >= -2) anel(b3X(-2), b3Y(2));    // máximo
+    if (x >= 2) anel(b3X(2), b3Y(0));      // intercepto com o eixo x
+    if (x >= 0) anel(b3X(0), b3Y(1));      // intercepto com o eixo y
+    if (x >= 4 || T < 1000) { /* extremidades já cheias acima */ }
+
+    // âncoras: cruz em A (eixo x), G na curva e cruz em C (eixo y)
+    const yG = B3F(x), ax = b3X(x), ay = b3Y(0), gx = b3X(x), gy = b3Y(yG), cy = b3Y(yG);
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(gx, gy); ctx.moveTo(gx, gy); ctx.lineTo(b3X(0), cy); ctx.stroke();
+    ctx.setLineDash([]);
+    cruz(ctx, ax, ay);
+    cruz(ctx, b3X(0), cy);
+    dot(ctx, gx, gy, 6, CURVE);
+  }
+
+  // Cruz branca com contorno, como no restante do aplicativo
+  function cruz(ctx, x, y) {
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = CURVE; ctx.lineWidth = 7; ctx.beginPath();
+    ctx.moveTo(x - 10, y); ctx.lineTo(x + 10, y); ctx.moveTo(x, y - 10); ctx.lineTo(x, y + 10); ctx.stroke();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3.5; ctx.beginPath();
+    ctx.moveTo(x - 10, y); ctx.lineTo(x + 10, y); ctx.moveTo(x, y - 10); ctx.lineTo(x, y + 10); ctx.stroke();
+  }
+
+  let b3Raf = null, b3T0 = 0;
+  function b3Iniciar() {
+    b3Parar();
+    b3T0 = performance.now();
+    const loop = now => { b3Desenhar(now - b3T0); b3Raf = requestAnimationFrame(loop); };
+    b3Raf = requestAnimationFrame(loop);
+  }
+  function b3Parar() {
+    if (b3Raf) cancelAnimationFrame(b3Raf);
+    b3Raf = null;
+  }
+  b3Desenhar(0);
+
+  // ---------- Bloco 3 · Etapa 1: valor da função e interceptos ----------
+  const eG = [
+    { f: x => x * x, dom: [-2, 2], pontos: null, especiais: [0] },
+    { f: x => -0.25 * (x + 6) * (x - 2), dom: [-4, 4], pontos: [[-4, 3], [-2, 4], [0, 3], [2, 0], [4, -5]], especiais: [-2, 0, 2] }
+  ];
+  const E_W = 360, E_H = 360, E_ESC = 36;   // janela de −5 a 5 nos dois eixos, mesma escala
+  const eX = x => (x + 5) * E_ESC;
+  const eY = y => E_H - (y + 5) * E_ESC;
+  const eInvX = px => px / E_ESC - 5;
+  const eInvY = py => (E_H - py) / E_ESC - 5;
+  const ePonto = (ctx, x, y, r, col) => dot(ctx, x, y, r, col);
+
+  // estilos desta etapa
+  const eCss = document.createElement('style');
+  eCss.textContent = `
+    .b3-g[hidden] { display: none; }
+    .b3-ajuda { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 50%; padding: 0; min-height: 0; background: var(--roxo); color: #fff; font-weight: 800; font-size: 1.1rem; z-index: 3; }
+    .b3-perg { position: absolute; top: 8px; right: 50px; height: 124px; width: 0; overflow: hidden; background: #fffdf5; border: 0; border-radius: 12px; transition: width .45s ease; z-index: 3; }
+    .b3-perg.aberto { width: 210px; border: 1.5px solid var(--roxo); }
+    .b3-perg button { display: block; margin: 8px 6px; width: calc(100% - 12px); min-height: 42px; padding: 0 8px; white-space: nowrap; }
+    .b3-bloq { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px; background: rgba(255, 253, 245, .78); color: var(--tinta); font-weight: 700; cursor: pointer; border-radius: 14px; z-index: 2; }
+    .b3-bloq.oculto { display: none; }
+    .b3-resp { margin-top: 12px; transition: opacity .3s; }
+    .b3-resp.travado { opacity: .35; pointer-events: none; }
+    .b3-resp p { margin: 8px 0; text-align: center; }
+    .b3-tab { margin: 0 auto 8px; border-collapse: collapse; }
+    .b3-tab th, .b3-tab td { border: 1px solid var(--borda); padding: 4px 12px; text-align: center; }
+    .b3-tab .resp { width: 64px; }
+    .b3-resp .resp { width: 64px; font: inherit; padding: 4px; text-align: center; border: 1.5px solid var(--roxo); border-radius: 8px; background: #fff; color: var(--tinta); }
+    .b3-teclas[hidden] { display: none; }
+    .b3-trava { position: fixed; inset: 0; z-index: 40; background: transparent; }
+    .b3-trava[hidden] { display: none; }
+  `;
+  document.head.appendChild(eCss);
+
+  // Respostas corretas e caixas de cada gráfico. Na segunda função, a coordenada escondida de
+  // cada ponto é sorteada a cada acesso (0 = esconde x, 1 = esconde y).
+  function eRegistros(gi) {
+    const caixa = (k, v) => `<input class="resp" data-k="${k}" data-v="${v}" inputmode="none" autocomplete="off" aria-label="resposta">`;
+    if (gi === 0) {
+      // uma linha por valor de x: tabela (x | f(x)), notação e pontos ocupam o mesmo registro
+      return {
+        html: `
+          <table class="b3-tab3">
+            <tr><th colspan="2">Tabela</th><th>Notação</th><th>Pontos</th></tr>
+            <tr><th>x</th><th>f(x)</th><th></th><th></th></tr>
+            <tr><td>-2</td><td>${caixa('t1', 4)}</td>
+                <td>f(-2) = ${caixa('n1', 4)}</td>
+                <td>(${caixa('p1x', -2)}, ${caixa('p1y', 4)})</td></tr>
+            <tr><td>${caixa('t2x', 0)}</td><td>${caixa('t2y', 0)}</td>
+                <td>${caixa('n2', 0)} = f(0)</td>
+                <td>(${caixa('p2x', 0)}, ${caixa('p2y', 0)})</td></tr>
+            <tr><td>${caixa('t3x', 1)}</td><td>${caixa('t3y', 1)}</td>
+                <td>f(1) = ${caixa('n3', 1)}</td>
+                <td>(${caixa('p3x', 1)}, ${caixa('p3y', 1)})</td></tr>
+          </table>`
+      };
+    }
+    // segundo gráfico: uma linha por ponto. Em cada linha, a situação é sorteada a cada acesso:
+    // 0 = só x aparece; 1 = só y aparece; 2 = nenhum aparece (x e y para preencher)
+    const linhas = eG[1].pontos.map(([x, y], i) => {
+      const sit = Math.floor(Math.random() * 3);
+      const tx = sit === 0 ? String(x) : caixa(`q${i}x`, x);
+      const ty = sit === 1 ? String(y) : caixa(`q${i}y`, y);
+      return `<tr><td>${tx}</td><td>${ty}</td>
+              <td>f(${x}) = ${caixa(`n${i}`, y)}</td>
+              <td>(${caixa(`p${i}x`, x)}, ${caixa(`p${i}y`, y)})</td></tr>`;
+    }).join('');
+    return {
+      html: `
+        <table class="b3-tab3">
+          <tr><th colspan="2">Tabela</th><th>Notação</th><th>Pontos</th></tr>
+          <tr><th>x</th><th>f(x)</th><th></th><th></th></tr>
+          ${linhas}
+        </table>`
+    };
+  }
+
+  // Raízes de f(x) = v no domínio, a mais próxima de xref
+  function eRaiz(f, v, dom, xref) {
+    const N = 800, L = dom[0], R = dom[1], h = (R - L) / N;
+    let best = null, bd = Infinity, xa = L, ya = f(L) - v;
+    for (let i = 1; i <= N; i++) {
+      const xb = L + i * h, yb = f(xb) - v;
+      if (Number.isFinite(ya) && Number.isFinite(yb) && (ya > 0) !== (yb > 0)) {
+        let lo = xa, hi = xb;
+        for (let k = 0; k < 50; k++) {
+          const m = (lo + hi) / 2;
+          if ((f(m) - v > 0) === (f(lo) - v > 0)) lo = m; else hi = m;
+        }
+        const r = (lo + hi) / 2, d = Math.abs(r - xref);
+        if (d < bd) { bd = d; best = r; }
+      }
+      xa = xb; ya = yb;
+    }
+    return best;
+  }
+
+  // Todas as interseções com os eixos dentro do domínio, em ordem de x
+  function eInterceptos(gi) {
+    const { f, dom } = eG[gi];
+    const N = 800, h = (dom[1] - dom[0]) / N, ev = [];
+    let xa = dom[0], ya = f(dom[0]);
+    for (let i = 0; i <= N; i++) {
+      const x = dom[0] + i * h, y = f(x);
+      if (Math.abs(y) < 1e-9) ev.push({ x: Math.abs(x) < 1e-9 ? 0 : x, y: 0 });
+      else if (i > 0 && Number.isFinite(ya) && Number.isFinite(y) && (ya > 0) !== (y > 0)) {
+        const r = eRaiz(f, 0, dom, x);
+        if (r !== null) ev.push({ x: r, y: 0 });
+      }
+      xa = x; ya = y;
+    }
+    if (dom[0] <= 0 && dom[1] >= 0) ev.push({ x: 0, y: f(0) });
+    // remove repetidos e ordena pela abscissa
+    const uniq = [];
+    ev.sort((a, b) => a.x - b.x).forEach(p => {
+      if (!uniq.some(q => Math.abs(q.x - p.x) < 1e-6 && Math.abs(q.y - p.y) < 1e-6)) uniq.push({ x: Math.round(p.x * 1e6) / 1e6, y: Math.round(p.y * 1e6) / 1e6 });
+    });
+    return uniq;
+  }
+
+  // Desenho base: grade, eixos, curva, extremidades, pontos da lista e as cruzes com G
+  function eBase(ctx, gi, xA) {
+    const { f, dom, pontos } = eG[gi];
+    ctx.clearRect(0, 0, E_W, E_H);
+    ctx.strokeStyle = css('--grade'); ctx.lineWidth = 1;
+    for (let v = -5; v <= 5; v++) {
+      ctx.beginPath(); ctx.moveTo(eX(v), 0); ctx.lineTo(eX(v), E_H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, eY(v)); ctx.lineTo(E_W, eY(v)); ctx.stroke();
+    }
+    ctx.strokeStyle = css('--eixo'); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, eY(0)); ctx.lineTo(E_W, eY(0)); ctx.moveTo(eX(0), 0); ctx.lineTo(eX(0), E_H); ctx.stroke();
+
+    // curva no domínio
+    ctx.strokeStyle = CURVE; ctx.lineWidth = 3; ctx.beginPath();
+    for (let i = 0; i <= 200; i++) {
+      const x = dom[0] + i * (dom[1] - dom[0]) / 200;
+      if (i === 0) ctx.moveTo(eX(x), eY(f(x))); else ctx.lineTo(eX(x), eY(f(x)));
+    }
+    ctx.stroke();
+    // extremidades cheias (o gráfico inclui os dois extremos)
+    ePonto(ctx, eX(dom[0]), eY(f(dom[0])), 6, CURVE);
+    ePonto(ctx, eX(dom[1]), eY(f(dom[1])), 6, CURVE);
+    // pontos da lista (segunda função)
+    if (pontos) pontos.forEach(([x, y]) => ePonto(ctx, eX(x), eY(y), 5, '#ffffff'));
+    // destaques roxos: só os já alcançados pela cruz
+    (eG[gi].especiais || []).forEach(px => {
+      if (!eEst[gi].alc.has(px)) return;
+      ePonto(ctx, eX(px), eY(f(px)), 7, CURVE);
+    });
+
+    // âncoras e cruzes: A no eixo x, G na curva, C no eixo y
+    const yG = f(xA), ax = eX(xA), ay = eY(0), gx = eX(xA), gy = eY(yG), cx = eX(0), cy = eY(yG);
+    ctx.setLineDash([4, 4]); ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(gx, gy); ctx.lineTo(cx, cy); ctx.stroke();
+    ctx.setLineDash([]);
+    cruz(ctx, ax, ay);
+    cruz(ctx, cx, cy);
+    ePonto(ctx, gx, gy, 6, CURVE);
+    // valores das coordenadas presos às cruzes: x sob a cruz do eixo x, y ao lado da cruz do eixo y
+    eCaixa(ctx, fmt(xA), ax - 10, ay + 24, null, 1);
+    eCaixa(ctx, fmt(yG), cx + 10, cy - 8, null, 1);
+  }
+
+  // Caixa de texto opaca, para que o rótulo fique por cima do gráfico sem deixá-lo aparecer
+  function eCaixa(ctx, txt, x, y, cor, alfa) {
+    ctx.save();
+    ctx.globalAlpha = alfa;
+    ctx.font = 'bold 15px system-ui';
+    const w = ctx.measureText(txt).width;
+    ctx.fillStyle = css('--fundo-grafico');
+    ctx.fillRect(x - 4, y - 15, w + 8, 20);
+    ctx.fillStyle = cor || css('--tinta');
+    ctx.textAlign = 'left';
+    ctx.fillText(txt, x, y);
+    ctx.restore();
+  }
+
+  // Ajuda "Valor da função": o ponto vai a x escolhido, e o valor sai pelos eixos até G
+  function eValor(ctx, gi, st, t) {
+    const { f } = eG[gi];
+    const xE = st.ajuda.xE, yG = f(xE);
+    let xA = st.x;
+    if (t < 1000) xA = st.x + (xE - st.x) * ease(t / 1000);
+    else xA = xE;
+    eBase(ctx, gi, xA);
+    const trem = (x1, y1, x2, y2) => {
+      ctx.strokeStyle = SEG; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x1, y1);
+      for (let k = 1; k <= 8; k++) {
+        const u = k / 8, jit = k < 8 ? (Math.random() * 8 - 4) : 0;
+        ctx.lineTo(x1 + (x2 - x1) * u + jit, y1 + (y2 - y1) * u - jit);
+      }
+      ctx.stroke();
+    };
+    const ax = eX(xE), ay = eY(0), gx = eX(xE), gy = eY(yG), cx = eX(0);
+    if (t >= 1000 && t < 2000) {
+      const piscar = (Math.sin((t - 1000) / 110) + 1) / 2;
+      eCaixa(ctx, fmt(xE), ax - 8, ay + 22, null, piscar);
+    }
+    if (t >= 2000 && t < 3000) trem(ax, ay, gx, gy);
+    if (t >= 3000 && t < 4000) {
+      trem(gx, gy, cx, gy);
+      const piscar = (Math.sin((t - 3000) / 110) + 1) / 2;
+      eCaixa(ctx, fmt(yG), cx + 8, gy - 6, null, piscar);
+    }
+    if (t >= 4000) {
+      const a = t < 5200 ? 1 : Math.max(0, 1 - (t - 5200) / 1300);
+      eCaixa(ctx, `${fmt(yG)} = f(${fmt(xE)})`, 10, 24, null, a);
+      eCaixa(ctx, `(${fmt(xE)}, ${fmt(yG)})`, gx + 10, gy - 14, null, a);
+    }
+  }
+
+  // Ajuda "Interceptos": um ponto viaja pela curva; cada interseção vibra e mostra as coordenadas
+  function eInter(ctx, gi, st, t) {
+    const { f, dom } = eG[gi];
+    const ev = st.ajuda.eventos, TRAJ = 2600, VIB = 1500, RT = 600;
+    const fim = ev[ev.length - 1].x;
+    const tEv = ev.map(e => (e.x - dom[0]) / (fim - dom[0]) * TRAJ);
+    const xT = dom[0] + (fim - dom[0]) * Math.min(1, t / TRAJ);
+    eBase(ctx, gi, st.x);
+    // rastro: sombras do ponto que viaja
+    for (let k = 1; k <= 8; k++) {
+      const xs = xT - k * 0.08 * (fim - dom[0]) / 8;
+      if (xs < dom[0]) break;
+      ctx.globalAlpha = 0.5 * (1 - k / 9);
+      ePonto(ctx, eX(xs), eY(f(xs)), 5, CURVE);
+    }
+    ctx.globalAlpha = 1;
+    if (t < TRAJ) ePonto(ctx, eX(xT), eY(f(xT)), 7, CURVE);
+    // interseções: aparecem, vibram e depois mostram as coordenadas
+    let ultimo = 0;
+    ev.forEach((e, i) => {
+      if (t < tEv[i]) return;
+      const dt = t - tEv[i];
+      const vib = dt < VIB ? (Math.random() * 4 - 2) : 0;
+      const px = eX(e.x) + vib, py = eY(e.y) + vib;
+      ePonto(ctx, px, py, 7, SEG);
+      if (dt < VIB) return;
+      // coordenadas: ponto na origem anima x e depois y; nos demais, só a coordenada do eixo
+      const d = dt - VIB;
+      const xPart = Math.abs(e.y) < 1e-9 && Math.abs(e.x) > 1e-9 ? true : Math.abs(e.x) < 1e-9 && Math.abs(e.y) < 1e-9;
+      const yPart = Math.abs(e.x) < 1e-9 || (Math.abs(e.y) < 1e-9 && Math.abs(e.x) < 1e-9);
+      const sx = (d < RT) ? 1 + 0.6 * Math.sin(Math.PI * d / RT) : 1;
+      const d2 = d - RT;
+      const sy = (d2 > 0 && d2 < RT) ? 1 + 0.6 * Math.sin(Math.PI * d2 / RT) : 1;
+      const alfa = t > fim ? 1 : 1;
+      const fadeOut = Math.max(0, Math.min(1, 1 - (t - (TRAJ + VIB + 2 * RT + 300)) / 900));
+      ultimo = Math.max(ultimo, d);
+      const txtX = fmt(e.x), txtY = fmt(e.y);
+      const tx = px + 10, ty = py - 12;
+      ctx.save();
+      ctx.globalAlpha = fadeOut;
+      ctx.font = 'bold 15px system-ui';
+      ctx.fillStyle = css('--tinta');
+      ctx.textAlign = 'left';
+      ctx.fillText('(', tx, ty);
+      const wP = ctx.measureText('(').width;
+      ctx.save(); ctx.translate(tx + wP, ty); ctx.scale(xPart ? sx : 1, xPart ? sx : 1); ctx.fillText(txtX, 0, 0); ctx.restore();
+      const wX = ctx.measureText(txtX).width * (xPart ? sx : 1);
+      ctx.fillText(', ', tx + wP + wX, ty);
+      const wC = ctx.measureText(', ').width;
+      ctx.save(); ctx.translate(tx + wP + wX + wC, ty); ctx.scale(yPart ? sy : 1, yPart ? sy : 1); ctx.fillText(txtY, 0, 0); ctx.restore();
+      const wY = ctx.measureText(txtY).width * (yPart ? sy : 1);
+      ctx.fillText(')', tx + wP + wX + wC + wY, ty);
+      ctx.restore();
+    });
+  }
+
+  // Loop de uma ajuda: trava a tela e desenha a animação até o fim
+  function eAjuda(gi, tipo) {
+    const st = eEst[gi];
+    if (st.ajudaAtiva) return;
+    st.ajudaAtiva = true;
+    const xE = tipo === 'valor' ? (gi === 0 ? -1 : (Math.random() < 0.5 ? -2 : 4)) : null;
+    st.ajuda = { tipo, xE, eventos: tipo === 'inter' ? eInterceptos(gi) : null };
+    eTrava.hidden = false;
+    const t0 = performance.now();
+    const fimMs = tipo === 'valor' ? 6600 : 2600 + 1500 + 1200 + 1200 + 600 * 2 + 900;
+    const quadro = now => {
+      const t = now - t0;
+      const ctx = st.canvas.getContext('2d');
+      if (tipo === 'valor') eValor(ctx, gi, st, t);
+      else eInter(ctx, gi, st, t);
+      if (t < fimMs) requestAnimationFrame(quadro);
+      else {
+        st.ajudaAtiva = false; st.ajuda = null;
+        eTrava.hidden = true;
+        eDesenhar(gi);
+      }
+    };
+    requestAnimationFrame(quadro);
+  }
+
+  // Desenho normal do gráfico, com o estado atual
+  function eDesenhar(gi) {
+    if (eEst[gi].ajudaAtiva) return;
+    eBase(eEst[gi].canvas.getContext('2d'), gi, eEst[gi].x);
+  }
+
+  // Atualiza a posição de A e acompanha o domínio percorrido
+  function eMover(gi, x) {
+    const st = eEst[gi], dom = eG[gi].dom;
+    const anterior = st.x;
+    st.x = Math.max(dom[0], Math.min(dom[1], x));
+    st.min = Math.min(st.min, st.x); st.max = Math.max(st.max, st.x);
+    // interceptos e extremos ficam em roxo quando a cruz passa por eles
+    (eG[gi].especiais || []).forEach(px => {
+      const cruzou = (anterior - px) * (st.x - px) < 0 || (Math.abs(st.x - px) < 0.03 && Math.abs(anterior - px) >= 0.03);
+      if (cruzou) st.alc.add(px);
+    });
+    if (st.fase === 'explorar' && st.min <= dom[0] + 0.05 && st.max >= dom[1] - 0.05) {
+      st.fase = 'respostas';
+      st.resp.classList.remove('travado');
+      st.msg.textContent = 'Agora responda às perguntas.';
+    }
+    eDesenhar(gi);
+  }
+
+  const eTrava = document.createElement('div');
+  eTrava.className = 'b3-trava';
+  eTrava.hidden = true;
+  document.body.appendChild(eTrava);
+
+  const eEst = eG.map(() => ({ fase: 'bloqueado', x: 0, min: 0, max: 0, canvas: null, resp: null, msg: null, ajudaAtiva: false, ajuda: null, done: false, alc: new Set() }));
+
+  // Monta a tela da etapa: primeiro gráfico; o segundo só abre depois de concluir o primeiro
+  b3Etapa1.innerHTML = `
+    <div class="wrap">
+      <header class="stage-top">
+        <p class="titulo">Bloco 3 · Descubra com o gráfico</p>
+        <p class="identificacao">Valor da função e Interceptos</p>
+      </header>
+      <div id="b3gs"></div>
+      <div class="actions">
+        <button data-b3-voltar>← Voltar</button>
+        <button class="primary" data-b3-proximo hidden>Próximo gráfico →</button>
+      </div>
+    </div>`;
+  b3Etapa1.appendChild(eTrava);
+  const eGs = b3Etapa1.querySelector('#b3gs');
+  const eProximo = b3Etapa1.querySelector('[data-b3-proximo]');
+  let eGi = 0;
+
+  eG.forEach((G, gi) => {
+    const box = document.createElement('div');
+    box.className = 'b3-g';
+    box.hidden = gi !== 0;
+    box.innerHTML = `
+      <div class="gwrap">
+        <canvas width="${E_W}" height="${E_H}" aria-label="Gráfico da função"></canvas>
+        <button class="b3-ajuda" aria-label="Ajuda">?</button>
+        <div class="b3-perg">
+          <button data-ajuda="valor">Valor da função</button>
+          <button data-ajuda="inter">Interceptos</button>
+        </div>
+        <div class="b3-bloq">Clique aqui e faça o ponto no eixo x percorrer todo o domínio da função.</div>
+      </div>
+      <div class="b3-resp travado"></div>
+      <div class="b3-teclas"></div>
+      <p class="b3-msg note"></p>
+      <div class="actions"><button class="primary" data-conferir>Conferir</button></div>`;
+    eGs.appendChild(box);
+    const st = eEst[gi];
+    st.canvas = box.querySelector('canvas');
+    st.resp = box.querySelector('.b3-resp');
+    st.msg = box.querySelector('.b3-msg');
+    st.box = box;
+    st.perg = box.querySelector('.b3-perg');
+    st.bloq = box.querySelector('.b3-bloq');
+    st.gerar = () => {
+      const reg = eRegistros(gi);
+      st.resp.innerHTML = reg.html;
+      st.respostas = {};
+      st.resp.querySelectorAll('.resp').forEach(i => { st.respostas[i.dataset.k] = Number(i.dataset.v); });
+      st.resp.classList.add('travado');
+    };
+    st.gerar();
+    // teclado da tela: o mesmo do bloco 2, com as caixas desta etapa
+    st.box.querySelector('.b3-teclas').innerHTML = TECLADO_HTML;
+    ligarTeclado(box);
+
+    st.bloq.onclick = () => {
+      if (st.fase !== 'bloqueado') return;
+      st.fase = 'explorar';
+      st.bloq.classList.add('oculto');
+      st.msg.textContent = 'Mova a cruz do eixo x por todo o domínio da função.';
+    };
+
+    // pontos arrastáveis: cruz de A (eixo x) e cruz de C (eixo y)
+    const coords = e => {
+      const r = st.canvas.getBoundingClientRect();
+      return { x: (e.clientX - r.left) * E_W / r.width, y: (e.clientY - r.top) * E_H / r.height };
+    };
+    st.canvas.addEventListener('pointerdown', e => {
+      if (st.ajudaAtiva || st.fase === 'bloqueado') return;
+      const q = coords(e), yG = eG[gi].f(st.x);
+      if (Math.hypot(eX(st.x) - q.x, eY(0) - q.y) < 28) st.drag = 'A';
+      else if (Math.hypot(eX(0) - q.x, eY(yG) - q.y) < 28) st.drag = 'C';
+      if (st.drag) st.canvas.setPointerCapture(e.pointerId);
+    });
+    st.canvas.addEventListener('pointermove', e => {
+      if (!st.drag || st.ajudaAtiva) return;
+      const q = coords(e), dom = eG[gi].dom;
+      if (st.drag === 'A') eMover(gi, eInvX(q.x));
+      else {
+        const f = eG[gi].f;
+        const vals = [];
+        for (let i = 0; i <= 100; i++) vals.push(f(dom[0] + i * (dom[1] - dom[0]) / 100));
+        const v = Math.max(Math.min(...vals), Math.min(Math.max(...vals), eInvY(q.y)));
+        const r = eRaiz(f, v, dom, st.x);
+        if (r !== null) eMover(gi, r);
+      }
+    });
+    const soltar = () => { st.drag = null; };
+    st.canvas.addEventListener('pointerup', soltar);
+    st.canvas.addEventListener('pointercancel', soltar);
+
+    // ajuda: abre o pergaminho para a esquerda da interrogação
+    box.querySelector('.b3-ajuda').onclick = () => {
+      if (st.ajudaAtiva) return;
+      st.perg.classList.toggle('aberto');
+    };
+    box.querySelectorAll('[data-ajuda]').forEach(b => {
+      b.onclick = () => {
+        st.perg.classList.remove('aberto');
+        eAjuda(gi, b.dataset.ajuda === 'valor' ? 'valor' : 'inter');
+      };
+    });
+
+    // conferir as respostas
+    box.querySelector('[data-conferir]').onclick = () => {
+      if (st.fase !== 'respostas') { st.msg.textContent = 'Primeiro percorra todo o domínio no gráfico.'; return; }
+      const valores = st.resp.querySelectorAll('.resp');
+      let ok = true;
+      valores.forEach(i => {
+        const v = lerNumero(i.value);
+        if (v === null || Math.abs(v - Number(i.dataset.v)) > 0.05) ok = false;
+      });
+      if (!ok) { st.msg.textContent = 'Confira as respostas e tente de novo.'; return; }
+      st.done = true;
+      st.resp.classList.add('travado');
+      st.msg.textContent = 'Muito bem!';
+      celebrar();
+      if (gi < eG.length - 1) eProximo.hidden = false;
+      else st.msg.textContent = 'Etapa concluída. Muito bem!';
+    };
+  });
+
+  // Próximo gráfico só depois de concluir o anterior
+  eProximo.onclick = () => {
+    if (!eEst[0].done) return;
+    eGs.children[0].hidden = true;
+    eGs.children[1].hidden = false;
+    eProximo.hidden = true;
+    eGi = 1;
+    eDesenhar(1);
+  };
+  b3Etapa1.querySelector('[data-b3-voltar]').onclick = () => go(B3_INI);
+
+  // Desenho inicial: primeiro gráfico bloqueado, com a frase de convite
+  eDesenhar(0);
+  eDesenhar(1);
 
 })();
 </script>
