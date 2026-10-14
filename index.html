@@ -1727,50 +1727,46 @@
     .b3-teclas[hidden] { display: none; }
     .b3-trava { position: fixed; inset: 0; z-index: 40; background: transparent; }
     .b3-trava[hidden] { display: none; }
+    .b3-cartoes { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 420px; margin: 0 auto 8px; }
+    .b3-cartao { border: 1px solid var(--borda); border-radius: 10px; background: #fff; padding: 6px 8px; text-align: center; }
+    .b3-rot { display: block; font-weight: 700; color: var(--roxo); font-size: .8rem; margin-bottom: 4px; }
+    .b3-cartao p { margin: 4px 0; }
+    .b3-tab4 { border-collapse: collapse; margin: 0 auto; }
+    .b3-tab4 th, .b3-tab4 td { border: 1px solid var(--borda); padding: 3px 6px; text-align: center; }
+    .b3-cartao .resp { width: 23px; padding: 2px 0; font: inherit; font-size: .9rem; text-align: center; border: 1.5px solid var(--roxo); border-radius: 6px; background: #fff; color: var(--tinta); }
+    .b3-g .gwrap { touch-action: none; user-select: none; -webkit-user-select: none; }
+    .b3-g .gwrap canvas { touch-action: none; }
   `;
   document.head.appendChild(eCss);
 
   // Respostas corretas e caixas de cada gráfico. Na segunda função, a coordenada escondida de
   // cada ponto é sorteada a cada acesso (0 = esconde x, 1 = esconde y).
   function eRegistros(gi) {
-    const caixa = (k, v) => `<input class="resp" data-k="${k}" data-v="${v}" inputmode="none" autocomplete="off" aria-label="resposta">`;
+    // caixa de resposta; alt aceita uma segunda resposta correta (quando há duas)
+    const caixa = (k, v, alt) => `<input class="resp" data-k="${k}" data-v="${v}"${alt !== undefined ? ` data-alt="${alt}"` : ''} inputmode="none" autocomplete="off" aria-label="resposta">`;
     if (gi === 0) {
-      // uma linha por valor de x: tabela (x | f(x)), notação e pontos ocupam o mesmo registro
-      return {
-        html: `
-          <table class="b3-tab3">
-            <tr><th colspan="2">Tabela</th><th>Notação</th><th>Pontos</th></tr>
-            <tr><th>x</th><th>f(x)</th><th></th><th></th></tr>
-            <tr><td>-2</td><td>${caixa('t1', 4)}</td>
-                <td>f(-2) = ${caixa('n1', 4)}</td>
-                <td>(${caixa('p1x', -2)}, ${caixa('p1y', 4)})</td></tr>
-            <tr><td>${caixa('t2x', 0)}</td><td>${caixa('t2y', 0)}</td>
-                <td>${caixa('n2', 0)} = f(0)</td>
-                <td>(${caixa('p2x', 0)}, ${caixa('p2y', 0)})</td></tr>
-            <tr><td>${caixa('t3x', 1)}</td><td>${caixa('t3y', 1)}</td>
-                <td>f(1) = ${caixa('n3', 1)}</td>
-                <td>(${caixa('p3x', 1)}, ${caixa('p3y', 1)})</td></tr>
-          </table>`
-      };
+      return { html: `
+        <div class="b3-cartoes">
+          <div class="b3-cartao"><span class="b3-rot">Tabela</span>
+            <table class="b3-tab4"><tr><th>x</th><th>f(x)</th></tr>
+              <tr><td>-2</td><td>${caixa('a1', 4)}</td></tr></table></div>
+          <div class="b3-cartao"><span class="b3-rot">Ponto</span>
+            <p>(0, ${caixa('b1', 0)})</p></div>
+          <div class="b3-cartao"><span class="b3-rot">Notação</span>
+            <p>f(2) = ${caixa('c1', 4)}</p></div>
+        </div>` };
     }
-    // segundo gráfico: uma linha por ponto. Em cada linha, a situação é sorteada a cada acesso:
-    // 0 = só x aparece; 1 = só y aparece; 2 = nenhum aparece (x e y para preencher)
-    const linhas = eG[1].pontos.map(([x, y], i) => {
-      const sit = Math.floor(Math.random() * 3);
-      const tx = sit === 0 ? String(x) : caixa(`q${i}x`, x);
-      const ty = sit === 1 ? String(y) : caixa(`q${i}y`, y);
-      return `<tr><td>${tx}</td><td>${ty}</td>
-              <td>f(${x}) = ${caixa(`n${i}`, y)}</td>
-              <td>(${caixa(`p${i}x`, x)}, ${caixa(`p${i}y`, y)})</td></tr>`;
-    }).join('');
-    return {
-      html: `
-        <table class="b3-tab3">
-          <tr><th colspan="2">Tabela</th><th>Notação</th><th>Pontos</th></tr>
-          <tr><th>x</th><th>f(x)</th><th></th><th></th></tr>
-          ${linhas}
-        </table>`
-    };
+    // segundo gráfico: x = −4 ou x = 0 valem para o ponto (x, 3)
+    return { html: `
+        <div class="b3-cartoes">
+          <div class="b3-cartao"><span class="b3-rot">Tabela</span>
+            <table class="b3-tab4"><tr><th>x</th><th>f(x)</th></tr>
+              <tr><td>${caixa('a2', 4)}</td><td>-5</td></tr></table></div>
+          <div class="b3-cartao"><span class="b3-rot">Ponto</span>
+            <p>(${caixa('b2', -4, 0)}, 3)</p></div>
+          <div class="b3-cartao"><span class="b3-rot">Notação</span>
+            <p>f(-4) = ${caixa('c2', 3)}</p></div>
+        </div>` };
   }
 
   // Raízes de f(x) = v no domínio, a mais próxima de xref
@@ -2131,7 +2127,9 @@
       let ok = true;
       valores.forEach(i => {
         const v = lerNumero(i.value);
-        if (v === null || Math.abs(v - Number(i.dataset.v)) > 0.05) ok = false;
+        const alt = i.dataset.alt !== undefined ? Number(i.dataset.alt) : null;
+        const certo = Math.abs(v - Number(i.dataset.v)) <= 0.05 || (alt !== null && Math.abs(v - alt) <= 0.05);
+        if (v === null || !certo) ok = false;
       });
       if (!ok) { st.msg.textContent = 'Confira as respostas e tente de novo.'; return; }
       st.done = true;
