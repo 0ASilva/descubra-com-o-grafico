@@ -1736,6 +1736,30 @@
     .b3-cartao .resp { width: 23px; padding: 2px 0; font: inherit; font-size: .9rem; text-align: center; border: 1.5px solid var(--roxo); border-radius: 6px; background: #fff; color: var(--tinta); }
     .b3-g .gwrap { touch-action: none; user-select: none; -webkit-user-select: none; }
     .b3-g .gwrap canvas { touch-action: none; }
+    .b3-app { max-width: 480px; margin: 8px auto; background: var(--papel); border: 2px solid var(--roxo); border-radius: 16px; overflow: hidden; }
+    .b3-cab { background: var(--roxo); color: #fff; text-align: center; padding: 14px 12px; min-height: 64px; }
+    .b3-cab .b3-t1 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+    .b3-cab .b3-t2 { margin: 2px 0 0; font-size: .85rem; opacity: .9; }
+    .b3-corpo { padding: 14px; }
+    .b3-titulo { display: flex; align-items: center; gap: 8px; color: var(--roxo); font-weight: 700; }
+    .b3-num { width: 26px; height: 26px; border-radius: 50%; background: var(--roxo); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: .9rem; flex: 0 0 auto; }
+    .b3-tit { flex: 1; text-align: left; }
+    .b3-ajudawrap { position: relative; }
+    .b3-ajuda { position: relative; top: auto; right: auto; width: 34px; height: 34px; min-height: 0; }
+    .b3-perg { right: 42px; top: 0; }
+    .b3-gw { max-width: 360px; margin: 12px auto 0; }
+    .b3-gw canvas { display: block; margin: 0 auto; width: 100%; max-width: 360px; height: auto; background: var(--fundo-grafico); border-radius: 10px; }
+    .b3-resp { background: var(--papel2); border: 1px solid var(--borda); border-radius: 14px; padding: 10px; margin-top: 12px; }
+    .b3-resp .b3-cartao { background: transparent; border: 0; }
+    .b3-acoes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+    .b3-acoes button { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 68px; padding: 6px 4px; border-radius: 12px; font-size: .8rem; font-weight: 600; }
+    .b3-acoes .ic { font-size: 1.3rem; line-height: 1; margin-bottom: 4px; }
+    .b3-acoes button.primary { background: var(--roxo); border-color: var(--roxo); color: #fff; }
+    .b3-acoes button.laranja { background: #FF6633; border-color: #FF6633; color: #fff; font-weight: 700; }
+    .b3-acoes button.laranja:disabled { opacity: .45; }
+    .b3-aviso { text-align: center; font-size: .85rem; color: var(--tinta-fraca); margin: 12px 0 0; }
+    .teclado { grid-template-columns: repeat(4, 47px); }
+    .teclado button { width: 47px; min-height: 40px; font-size: 1rem; }
   `;
   document.head.appendChild(eCss);
 
@@ -1823,6 +1847,13 @@
     }
     ctx.strokeStyle = css('--eixo'); ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(0, eY(0)); ctx.lineTo(E_W, eY(0)); ctx.moveTo(eX(0), 0); ctx.lineTo(eX(0), E_H); ctx.stroke();
+    // números dos eixos: fonte pequena e com todas as unidades
+    ctx.font = '10px system-ui'; ctx.fillStyle = css('--tinta-fraca');
+    for (let v = -5; v <= 5; v++) {
+      if (v === 0) continue;
+      ctx.textAlign = 'center'; ctx.fillText(String(v), eX(v), eY(0) + 12);
+      ctx.textAlign = 'right'; ctx.fillText(String(v), eX(0) - 4, eY(v) + 3);
+    }
 
     // curva no domínio
     ctx.strokeStyle = CURVE; ctx.lineWidth = 3; ctx.beginPath();
@@ -1835,7 +1866,7 @@
     ePonto(ctx, eX(dom[0]), eY(f(dom[0])), 6, CURVE);
     ePonto(ctx, eX(dom[1]), eY(f(dom[1])), 6, CURVE);
     // pontos da lista (segunda função)
-    if (pontos) pontos.forEach(([x, y]) => ePonto(ctx, eX(x), eY(y), 5, '#ffffff'));
+    if (pontos) pontos.forEach(([x, y]) => ePonto(ctx, eX(x), eY(y), 6, CURVE));
     // destaques roxos: só os já alcançados pela cruz
     (eG[gi].especiais || []).forEach(px => {
       if (!eEst[gi].alc.has(px)) return;
@@ -2016,42 +2047,56 @@
 
   const eEst = eG.map(() => ({ fase: 'bloqueado', x: 0, min: 0, max: 0, canvas: null, resp: null, msg: null, ajudaAtiva: false, ajuda: null, done: false, alc: new Set() }));
 
-  // Monta a tela da etapa: primeiro gráfico; o segundo só abre depois de concluir o primeiro
+  // Monta a tela da etapa no estilo do Labirinto Plano: um cartão por gráfico, mostrado um de cada vez
   b3Etapa1.innerHTML = `
-    <div class="wrap">
-      <header class="stage-top">
-        <p class="titulo">Bloco 3 · Descubra com o gráfico</p>
-        <p class="identificacao">Valor da função e Interceptos</p>
+    <div class="b3-app">
+      <header class="b3-cab">
+        <p class="b3-t1">Descubra com o Gráfico</p>
+        <p class="b3-t2">André Silva - IFRJ - 2026 - v.01</p>
       </header>
       <div id="b3gs"></div>
-      <div class="actions">
-        <button data-b3-voltar>← Voltar</button>
-        <button class="primary" data-b3-proximo hidden>Próximo gráfico →</button>
-      </div>
     </div>`;
   b3Etapa1.appendChild(eTrava);
   const eGs = b3Etapa1.querySelector('#b3gs');
-  const eProximo = b3Etapa1.querySelector('[data-b3-proximo]');
-  let eGi = 0;
+
+  // Mostra o gráfico de índice gi (o outro fica oculto)
+  function eMostrar(gi) {
+    eGs.querySelectorAll('.b3-g').forEach((el, i) => { el.hidden = i !== gi; });
+    eDesenhar(gi);
+  }
 
   eG.forEach((G, gi) => {
     const box = document.createElement('div');
     box.className = 'b3-g';
     box.hidden = gi !== 0;
     box.innerHTML = `
-      <div class="gwrap">
-        <canvas width="${E_W}" height="${E_H}" aria-label="Gráfico da função"></canvas>
-        <button class="b3-ajuda" aria-label="Ajuda">?</button>
-        <div class="b3-perg">
-          <button data-ajuda="valor">Valor da função</button>
-          <button data-ajuda="inter">Interceptos</button>
+      <div class="b3-corpo">
+        <div class="b3-titulo">
+          <span class="b3-num">1</span>
+          <span class="b3-tit">Valor da função e Interceptos</span>
+          <div class="b3-ajudawrap">
+            <button class="b3-ajuda" aria-label="Menu de dúvidas">?</button>
+            <div class="b3-perg">
+              <button data-ajuda="valor">Valor da função</button>
+              <button data-ajuda="inter">Interceptos</button>
+            </div>
+          </div>
         </div>
-        <div class="b3-bloq">Clique aqui e faça o ponto no eixo x percorrer todo o domínio da função.</div>
-      </div>
-      <div class="b3-resp travado"></div>
-      <div class="b3-teclas"></div>
-      <p class="b3-msg note"></p>
-      <div class="actions"><button class="primary" data-conferir>Conferir</button></div>`;
+        <div class="gwrap b3-gw">
+          <canvas width="${E_W}" height="${E_H}" aria-label="Gráfico da função"></canvas>
+          <div class="b3-bloq">Clique aqui e faça o ponto no eixo x percorrer todo o domínio da função.</div>
+        </div>
+        <div class="b3-resp travado"></div>
+        <div class="b3-teclas"></div>
+        <p class="b3-msg note"></p>
+        <div class="b3-acoes">
+          <button data-voltar><span class="ic">↩</span>Voltar</button>
+          <button class="primary" data-conferir><span class="ic">✔</span>Checar</button>
+          <button data-recomecar><span class="ic">↺</span>Recomeçar</button>
+          <button class="laranja" data-proximo disabled><span class="ic">▶</span>Próximo</button>
+        </div>
+        <p class="b3-aviso">Você pode testar quantas vezes quiser. Quando quiser saber se acertou, use Checar.</p>
+      </div>`;
     eGs.appendChild(box);
     const st = eEst[gi];
     st.canvas = box.querySelector('canvas');
@@ -2060,16 +2105,15 @@
     st.box = box;
     st.perg = box.querySelector('.b3-perg');
     st.bloq = box.querySelector('.b3-bloq');
+    st.proximo = box.querySelector('[data-proximo]');
     st.gerar = () => {
       const reg = eRegistros(gi);
       st.resp.innerHTML = reg.html;
-      st.respostas = {};
-      st.resp.querySelectorAll('.resp').forEach(i => { st.respostas[i.dataset.k] = Number(i.dataset.v); });
       st.resp.classList.add('travado');
     };
     st.gerar();
-    // teclado da tela: o mesmo do bloco 2, com as caixas desta etapa
-    st.box.querySelector('.b3-teclas').innerHTML = TECLADO_HTML;
+    // teclado da tela, com as caixas desta etapa
+    box.querySelector('.b3-teclas').innerHTML = TECLADO_HTML;
     ligarTeclado(box);
 
     st.bloq.onclick = () => {
@@ -2108,7 +2152,7 @@
     st.canvas.addEventListener('pointerup', soltar);
     st.canvas.addEventListener('pointercancel', soltar);
 
-    // ajuda: abre o pergaminho para a esquerda da interrogação
+    // menu de dúvidas: o pergaminho abre para a esquerda do ?
     box.querySelector('.b3-ajuda').onclick = () => {
       if (st.ajudaAtiva) return;
       st.perg.classList.toggle('aberto');
@@ -2120,7 +2164,7 @@
       };
     });
 
-    // conferir as respostas
+    // checar: confere as caixas do gráfico
     box.querySelector('[data-conferir]').onclick = () => {
       if (st.fase !== 'respostas') { st.msg.textContent = 'Primeiro percorra todo o domínio no gráfico.'; return; }
       const valores = st.resp.querySelectorAll('.resp');
@@ -2128,29 +2172,40 @@
       valores.forEach(i => {
         const v = lerNumero(i.value);
         const alt = i.dataset.alt !== undefined ? Number(i.dataset.alt) : null;
-        const certo = Math.abs(v - Number(i.dataset.v)) <= 0.05 || (alt !== null && Math.abs(v - alt) <= 0.05);
-        if (v === null || !certo) ok = false;
+        const certo = v !== null && (Math.abs(v - Number(i.dataset.v)) <= 0.05 || (alt !== null && Math.abs(v - alt) <= 0.05));
+        if (!certo) ok = false;
       });
       if (!ok) { st.msg.textContent = 'Confira as respostas e tente de novo.'; return; }
       st.done = true;
       st.resp.classList.add('travado');
-      st.msg.textContent = 'Muito bem!';
+      st.msg.textContent = gi < eG.length - 1 ? 'Muito bem! Agora você pode seguir.' : 'Etapa concluída. Muito bem!';
+      st.proximo.disabled = false;
       celebrar();
-      if (gi < eG.length - 1) eProximo.hidden = false;
-      else st.msg.textContent = 'Etapa concluída. Muito bem!';
+    };
+
+    // recomeçar: volta este gráfico ao início
+    box.querySelector('[data-recomecar]').onclick = () => {
+      st.fase = 'bloqueado'; st.x = 0; st.min = 0; st.max = 0; st.alc = new Set();
+      st.done = false; st.drag = null; st.ajudaAtiva = false; st.ajuda = null;
+      st.gerar();
+      st.bloq.classList.remove('oculto');
+      st.msg.textContent = '';
+      st.proximo.disabled = true;
+      eMostrar(gi);
+    };
+
+    // voltar: para o gráfico anterior, ou para a página de instruções
+    box.querySelector('[data-voltar]').onclick = () => {
+      if (gi === 0) go(B3_INI); else eMostrar(gi - 1);
+    };
+
+    // próximo: só depois de acertar
+    st.proximo.onclick = () => {
+      if (!st.done) return;
+      if (gi < eG.length - 1) eMostrar(gi + 1);
+      else go(B3_INI);
     };
   });
-
-  // Próximo gráfico só depois de concluir o anterior
-  eProximo.onclick = () => {
-    if (!eEst[0].done) return;
-    eGs.children[0].hidden = true;
-    eGs.children[1].hidden = false;
-    eProximo.hidden = true;
-    eGi = 1;
-    eDesenhar(1);
-  };
-  b3Etapa1.querySelector('[data-b3-voltar]').onclick = () => go(B3_INI);
 
   // Desenho inicial: primeiro gráfico bloqueado, com a frase de convite
   eDesenhar(0);
