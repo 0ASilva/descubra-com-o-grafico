@@ -1826,17 +1826,17 @@
   // cada ponto é sorteada a cada acesso (0 = esconde x, 1 = esconde y).
   function eRegistros(gi) {
     // caixa de resposta; alt aceita uma segunda resposta correta (quando há duas)
-    const caixa = (k, v, alt) => `<input class="resp" data-k="${k}" data-v="${v}"${alt !== undefined ? ` data-alt="${alt}"` : ''} inputmode="none" autocomplete="off" aria-label="resposta">`;
+    const caixa = (k, v, alt, pt) => `<input class="resp" data-k="${k}" data-v="${v}"${alt !== undefined ? ` data-alt="${alt}"` : ''}${pt ? ` data-px="${pt[0]}" data-py="${pt[1]}"` : ''} inputmode="none" autocomplete="off" aria-label="resposta">`;
     if (gi === 0) {
       return { html: `
         <div class="b3-cartoes">
           <div class="b3-cartao"><span class="b3-rot">Tabela</span>
             <table class="b3-tab4"><tr><th>x</th><th>f(x)</th></tr>
-              <tr><td>-2</td><td>${caixa('a1', 4)}</td></tr></table></div>
+              <tr><td>-2</td><td>${caixa('a1', 4, undefined, [-2, 4])}</td></tr></table></div>
           <div class="b3-cartao"><span class="b3-rot">Ponto</span>
-            <p>(0, ${caixa('b1', 0)})</p></div>
+            <p>(0, ${caixa('b1', 0, undefined, [0, 0])})</p></div>
           <div class="b3-cartao"><span class="b3-rot">Notação</span>
-            <p>f(2) = ${caixa('c1', 4)}</p></div>
+            <p>f(2) = ${caixa('c1', 4, undefined, [2, 4])}</p></div>
         </div>` };
     }
     // segundo gráfico: x = −4 ou x = 0 valem para o ponto (x, 3)
@@ -1844,11 +1844,11 @@
         <div class="b3-cartoes">
           <div class="b3-cartao"><span class="b3-rot">Tabela</span>
             <table class="b3-tab4"><tr><th>x</th><th>f(x)</th></tr>
-              <tr><td>${caixa('a2', 4)}</td><td>-5</td></tr></table></div>
+              <tr><td>${caixa('a2', 4, undefined, [4, -5])}</td><td>-5</td></tr></table></div>
           <div class="b3-cartao"><span class="b3-rot">Ponto</span>
-            <p>(${caixa('b2', -4, 0)}, 3)</p></div>
+            <p>(${caixa('b2', -4, 0, [0, 3])}, 3)</p></div>
           <div class="b3-cartao"><span class="b3-rot">Notação</span>
-            <p>f(-4) = ${caixa('c2', 3)}</p></div>
+            <p>f(-4) = ${caixa('c2', 3, undefined, [-4, 3])}</p></div>
         </div>` };
   }
 
@@ -1896,7 +1896,7 @@
   }
 
   // Desenho base: grade, eixos, curva, extremidades, pontos da lista e as cruzes com G
-  function eBase(ctx, gi, xA) {
+  function eBase(ctx, gi, xA, opts = {}) {
     const { f, dom, pontos } = eG[gi];
     ctx.clearRect(0, 0, E_W, E_H);
     ctx.strokeStyle = css('--grade'); ctx.lineWidth = 1;
@@ -1914,6 +1914,14 @@
       ctx.textAlign = 'right'; ctx.fillText(String(v), eX(0) - 4, eY(v) + 3);
     }
 
+    // sombra laranja sobre a parte do eixo x já percorrida; esmaece quando o domínio está completo
+    const est = eEst[gi];
+    if (est.max > est.min) {
+      const a = est.fadeT0 ? 0.3 * Math.max(0, 1 - (performance.now() - est.fadeT0) / 1000) : 0.3;
+      ctx.strokeStyle = SEG; ctx.lineWidth = 10; ctx.globalAlpha = a;
+      ctx.beginPath(); ctx.moveTo(eX(est.min), eY(0)); ctx.lineTo(eX(est.max), eY(0)); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
     // curva no domínio
     ctx.strokeStyle = CURVE; ctx.lineWidth = 3; ctx.beginPath();
     for (let i = 0; i <= 200; i++) {
@@ -1940,9 +1948,12 @@
     cruz(ctx, ax, ay);
     cruz(ctx, cx, cy);
     ePonto(ctx, gx, gy, 6, CURVE);
+    // rastro do ponto que se movimenta
+    if (opts.trilha) opts.trilha.forEach((tx, i) => { ctx.globalAlpha = 0.15 + 0.5 * (i + 1) / opts.trilha.length; ePonto(ctx, eX(tx), eY(eG[gi].f(tx)), 5, CURVE); });
+    ctx.globalAlpha = 1;
     // valores das coordenadas presos às cruzes: x sob a cruz do eixo x, y ao lado da cruz do eixo y
-    eCaixa(ctx, fmt(xA), ax - 10, ay + 24, null, 1);
-    eCaixa(ctx, fmt(yG), cx + 10, cy - 8, null, 1);
+    eCaixa(ctx, fmt(xA), ax - 10, ay + 24, null, opts.alfa ?? 1);
+    eCaixa(ctx, fmt(yG), cx + 10, cy - 8, null, opts.alfa ?? 1);
   }
 
   // Caixa de texto opaca, para que o rótulo fique por cima do gráfico sem deixá-lo aparecer
@@ -2074,6 +2085,45 @@
     requestAnimationFrame(quadro);
   }
 
+  // Leva a cruz do eixo x até x e, ao chegar, faz piscar as coordenadas ancoradas nos eixos
+  function eIrPara(gi, px) {
+    const st = eEst[gi];
+    if (st.ajudaAtiva || st.movendo || st.fase === 'bloqueado') return;
+    st.movendo = true;
+    const de = st.x, dur = 900 + Math.min(900, Math.abs(px - de) * 200), t0 = performance.now(), trilha = [];
+    const ctx = st.canvas.getContext('2d');
+    const quadro = now => {
+      const u = Math.min(1, (now - t0) / dur);
+      const xA = de + (px - de) * ease(u);
+      trilha.push(xA);
+      if (trilha.length > 10) trilha.shift();
+      eBase(ctx, gi, xA, { trilha: trilha.slice() });
+      if (u < 1) return requestAnimationFrame(quadro);
+      st.x = px; st.min = Math.min(st.min, px); st.max = Math.max(st.max, px);
+      const fim = performance.now() + 1600;
+      const piscar = agora => {
+        if (agora < fim) {
+          eBase(ctx, gi, st.x, { alfa: 0.25 + 0.75 * (Math.sin(agora / 110) + 1) / 2 });
+          return requestAnimationFrame(piscar);
+        }
+        st.movendo = false;
+        eDesenhar(gi);
+      };
+      requestAnimationFrame(piscar);
+    };
+    requestAnimationFrame(quadro);
+  }
+
+  // Redesenha por cerca de 1 s, para que a sombra esmaeça suavemente
+  function eEsmaecer(gi) {
+    const t0 = performance.now();
+    const quadro = now => {
+      eDesenhar(gi);
+      if (now - t0 < 1100) requestAnimationFrame(quadro);
+    };
+    requestAnimationFrame(quadro);
+  }
+
   // Desenho normal do gráfico, com o estado atual
   function eDesenhar(gi) {
     if (eEst[gi].ajudaAtiva) return;
@@ -2093,6 +2143,8 @@
     });
     if (st.fase === 'explorar' && st.min <= dom[0] + 0.05 && st.max >= dom[1] - 0.05) {
       st.fase = 'respostas';
+      st.fadeT0 = performance.now();
+      eEsmaecer(gi);
       st.resp.classList.remove('travado');
       st.msg.textContent = 'Agora responda às perguntas.';
     }
@@ -2169,6 +2221,10 @@
       const reg = eRegistros(gi);
       st.resp.innerHTML = reg.html;
       st.resp.classList.add('travado');
+      // ao tocar numa caixa, o ponto vai até o ponto que dá a resposta
+      st.resp.querySelectorAll('.resp[data-px]').forEach(i => {
+        i.addEventListener('focus', () => eIrPara(gi, Number(i.dataset.px)));
+      });
     };
     st.gerar();
     // teclado da tela, com as caixas desta etapa
@@ -2188,7 +2244,7 @@
       return { x: (e.clientX - r.left) * E_W / r.width, y: (e.clientY - r.top) * E_H / r.height };
     };
     st.canvas.addEventListener('pointerdown', e => {
-      if (st.ajudaAtiva || st.fase === 'bloqueado') return;
+      if (st.ajudaAtiva || st.movendo || st.fase === 'bloqueado') return;
       const q = coords(e), yG = eG[gi].f(st.x);
       if (Math.hypot(eX(st.x) - q.x, eY(0) - q.y) < 28) st.drag = 'A';
       else if (Math.hypot(eX(0) - q.x, eY(yG) - q.y) < 28) st.drag = 'C';
