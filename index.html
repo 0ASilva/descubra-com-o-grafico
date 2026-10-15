@@ -101,9 +101,13 @@
   .graph-nav { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 8px; }
   .graph-nav h2 { font-size: 1.1rem; margin: 0; color: var(--tinta); }
   .stage-base canvas {
-    display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto;
-    background: var(--fundo-grafico); border: 1px solid var(--borda); border-radius: 14px; cursor: pointer;
+    display: block; width: 100%; max-width: 360px; height: auto; margin: 0 auto;
+    background: var(--fundo-grafico); border: 1px solid var(--borda); border-radius: 10px; cursor: pointer;
   }
+  /* título de etapa dentro da moldura (padrão do bloco 3) */
+  .stage-top .b3-tit { font-size: 1.05rem; font-weight: 700; margin: 0; }
+  .b3-acoes.b3-acoes-3 { grid-template-columns: repeat(3, 1fr); }
+  .b3-corpo .stage-top { padding-top: 0; }
 
   .avatars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 360px; margin: 14px auto; }
   .avatar { padding: 10px 4px 8px; min-height: 0; border-radius: 14px; border: 2px solid var(--borda); background: var(--card); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -355,6 +359,14 @@
     ctx.fillStyle = cor || css('--tinta');
     ctx.textAlign = 'left';
     ctx.fillText(txt, left, y);
+  }
+
+  // Rótulos dos eixos: "x" no fim do eixo horizontal e "y = f(x)" no topo do eixo vertical
+  // (yEixo: altura do eixo x; xEixo: posição do eixo y)
+  function rotulosEixos(ctx, c, yEixo, xEixo) {
+    ctx.font = '600 13px system-ui';
+    numLabel(ctx, c, 'x', c.width - 6, yEixo - 8, 'right', css('--tinta'));
+    numLabel(ctx, c, 'y = f(x)', xEixo + 8, 18, 'left', css('--tinta'));
   }
 
   // ---------- análise numérica da função ----------
@@ -740,6 +752,8 @@
       else if (p === 'intercepto') drawIntercept(ctx, c, M, fn, prog);
       else drawExtrema(ctx, c, M, p, A, prog);
     }
+    rotulosEixos(ctx, c, M.Y(0), M.X(0));
+    if (st.atualizarAcoes) st.atualizarAcoes();
   }
 
   // Anima as propriedades ativas, uma após a outra, no gráfico atual da etapa
@@ -776,12 +790,24 @@
   }
 
   // Monta a estrutura de uma etapa dentro de um contêiner (tela ou demonstração)
-  function montarEtapa(container, nome) {
+  // numero: posição da etapa no bloco. Com número, a tela ganha a moldura e o cabeçalho do padrão;
+  // sem número (demonstração), fica só o título
+  function montarEtapa(container, nome, numero) {
+    const cabecalho = numero
+      ? `<div class="b3-app"><header class="b3-cab"><p class="b3-t1">Descubra com o Gráfico</p><p class="b3-t2">André Silva - IFRJ - 2026 - v.01</p></header><div class="b3-corpo">`
+      : '';
+    const titulo = numero
+      ? `<div class="b3-titulo"><span class="b3-num">${numero}</span><span class="b3-tit identificacao">${nome}</span></div>`
+      : `<p class="identificacao">${nome}</p>`;
+    // fileira de ações (padrão do bloco 3, sem Checar: o bloco 1 não tem resposta a conferir)
+    const acoes = numero
+      ? `<div class="b3-acoes b3-acoes-3"><button data-voltar><span class="ic">↩</span>Voltar</button><button data-recomecar><span class="ic">↺</span>Recomeçar</button><button class="laranja" data-proximo disabled><span class="ic">▶</span>Próximo</button></div>`
+      : '';
     container.innerHTML = `
+      ${cabecalho}
       <div class="wrap">
         <header class="stage-top">
-          <p class="titulo">Descubra com o gráfico</p>
-          <p class="identificacao">${nome}</p>
+          ${titulo}
           <p class="instrucao" hidden>Clique em cada gráfico.</p>
         </header>
         <div class="stage-mid">
@@ -801,7 +827,9 @@
           </div>
           <canvas width="360" height="360" aria-label="Gráfico da função"></canvas>
         </div>
-      </div>`;
+        ${acoes}
+      </div>
+      ${numero ? '</div></div>' : ''}`;
     return {
       canvas: container.querySelector('canvas'),
       hint: container.querySelector('.instrucao'),
@@ -812,6 +840,9 @@
       next: container.querySelector('[data-stage-next]'),
       graphPrev: container.querySelector('[data-graph-prev]'),
       graphNext: container.querySelector('[data-graph-next]'),
+      voltar: container.querySelector('[data-voltar]'),
+      recomecar: container.querySelector('[data-recomecar]'),
+      proximo: container.querySelector('[data-proximo]'),
       gi: 0, active: new Set(),
       states: FUNCS.map(() => ({ done: new Set(), current: null, running: false, token: 0 }))
     };
@@ -1035,7 +1066,7 @@
     const sec = document.createElement('section');
     sec.className = 'slide';
     track.appendChild(sec);
-    const st = montarEtapa(sec, et.nome);
+    const st = montarEtapa(sec, et.nome, s + 1);
 
     // setas de etapa: a da esquerda some na primeira etapa; a da direita some na última
     st.prev.hidden = s === 0;
@@ -1053,6 +1084,26 @@
     };
 
     setBotoes(st, et.botoes);
+
+    // fileira de ações: Voltar, Recomeçar (só o gráfico atual) e Próximo (depois de percorrer o gráfico)
+    st.atualizarAcoes = () => {
+      const s2 = st.states[st.gi], ativo = [...st.active][0];
+      st.proximo.disabled = !(ativo && s2.done.has(ativo) && !s2.running);
+    };
+    st.voltar.onclick = () => {
+      if (st.gi > 0) { st.gi--; mostrarGrafico(st); st.registrar(); }
+      else go(s === 0 ? 1 : 2 + s - 1);
+    };
+    st.recomecar.onclick = () => {
+      const s2 = st.states[st.gi];
+      s2.token++; s2.running = false; s2.done = new Set(); s2.current = null;
+      mostrarGrafico(st);
+    };
+    st.proximo.onclick = () => {
+      if (st.proximo.disabled) return;
+      if (st.gi < FUNCS.length - 1) { st.gi++; mostrarGrafico(st); st.registrar(); }
+      else { st.next.classList.remove('pulsar'); go(2 + s + 1); }
+    };
 
     // navegação entre gráficos: circular (1 volta ao 6 e o 6 avança ao 1)
     st.graphPrev.onclick = () => { st.gi = (st.gi + FUNCS.length - 1) % FUNCS.length; mostrarGrafico(st); st.registrar(); };
@@ -1319,6 +1370,7 @@
         dot(ctx, q.x, q.y, 7, CURVE);
       }
     });
+    rotulosEixos(ctx, c, b2Y(0), b2X(0));
   }
 
   // Texto da pergunta de cada etapa, com as caixas de resposta
@@ -1400,6 +1452,7 @@
       : (semIntervalo ? et.instr[1] : et.instr[0]);
     st.gPrev.disabled = !est.done; st.gNext.disabled = !est.done;
     st.prev.disabled = !est.done; st.next.disabled = !est.done;
+    st.proximo.disabled = !est.done;
     // com todos os gráficos concluídos, o avanço da etapa pisca
     st.next.classList.toggle('pulsar', b2Estados[k].every(e => e.done));
 
@@ -1444,10 +1497,10 @@
     sec.className = 'slide';
     track.appendChild(sec);
     sec.innerHTML = `
+      <div class="b3-app"><header class="b3-cab"><p class="b3-t1">Descubra com o Gráfico</p><p class="b3-t2">André Silva - IFRJ - 2026 - v.01</p></header><div class="b3-corpo">
       <div class="wrap">
         <header class="stage-top">
-          <p class="titulo">Bloco 2 · Descubra com o gráfico</p>
-          <p class="identificacao">${et.nome}</p>
+          <div class="b3-titulo"><span class="b3-num">${k + 1}</span><span class="b3-tit identificacao">${et.nome}</span></div>
           <p class="instrucao"></p>
         </header>
         <div class="stage-mid">
@@ -1470,7 +1523,13 @@
             <div class="qbox" hidden></div>
           </div>
         </div>
-      </div>`;
+        <div class="b3-acoes b3-acoes-3">
+          <button data-voltar><span class="ic">↩</span>Voltar</button>
+          <button data-recomecar><span class="ic">↺</span>Recomeçar</button>
+          <button class="laranja" data-proximo disabled><span class="ic">▶</span>Próximo</button>
+        </div>
+      </div>
+      </div></div>`;
 
     const st = {
       k, gi: 0, drag: null, qKey: null, blinkOn: true,
@@ -1482,13 +1541,32 @@
       prev: sec.querySelector('[data-stage-prev]'),
       next: sec.querySelector('[data-stage-next]'),
       gPrev: sec.querySelector('[data-graph-prev]'),
-      gNext: sec.querySelector('[data-graph-next]')
+      gNext: sec.querySelector('[data-graph-next]'),
+      voltar: sec.querySelector('[data-voltar]'),
+      recomecar: sec.querySelector('[data-recomecar]'),
+      proximo: sec.querySelector('[data-proximo]')
     };
     st.prev.hidden = k === 0;
     st.prev.onclick = () => { if (b2Estados[k][st.gi].done) go(B2_BASE + k - 1); };
     st.next.onclick = () => { if (b2Estados[k][st.gi].done) go(B2_BASE + k + 1); };
     st.gPrev.onclick = () => { if (b2Estados[k][st.gi].done) { st.gi = (st.gi + B2_GRAFICOS.length - 1) % B2_GRAFICOS.length; b2Render(st); } };
     st.gNext.onclick = () => { if (b2Estados[k][st.gi].done) { st.gi = (st.gi + 1) % B2_GRAFICOS.length; b2Render(st); } };
+
+    // fileira de ações: Voltar (gráfico anterior ou etapa anterior), Recomeçar (só o gráfico atual) e Próximo
+    st.voltar.onclick = () => {
+      if (st.gi > 0) { st.gi--; b2Render(st); }
+      else go(k === 0 ? B2_BASE - 1 : B2_BASE + k - 1);
+    };
+    st.recomecar.onclick = () => {
+      b2Estados[k][st.gi] = b2EstadoNovo(k, st.gi);
+      st.drag = null;
+      b2Render(st);
+    };
+    st.proximo.onclick = () => {
+      if (!b2Estados[k][st.gi].done) return;
+      if (st.gi < B2_GRAFICOS.length - 1) { st.gi++; b2Render(st); }
+      else go(B2_BASE + k + 1);
+    };
 
     const coords = e => {
       const r = st.canvas.getBoundingClientRect();
@@ -1561,16 +1639,20 @@
       <p class="note" id="saida"></p>
     </div>`;
   track.appendChild(fim);
-  fim.querySelectorAll('[data-fim]').forEach(b => {
-    b.onclick = () => {
-      const saida = fim.querySelector('#saida');
-      const acao = b.dataset.fim;
-      if (acao === 'bloco1') go(2);
-      else if (acao === 'bloco2') go(B2_BASE);
-      else if (acao === 'bloco3') go(B3_INI);
-      else { window.close(); saida.textContent = 'Feche esta aba do navegador para sair.'; }
-    };
-  });
+  // botões de uma tela de fim de bloco (usados também pela tela do bloco 3)
+  function ligarFim(sec) {
+    sec.querySelectorAll('[data-fim]').forEach(b => {
+      b.onclick = () => {
+        const saida = sec.querySelector('#saida');
+        const acao = b.dataset.fim;
+        if (acao === 'bloco1') go(2);
+        else if (acao === 'bloco2') go(B2_BASE);
+        else if (acao === 'bloco3') go(B3_INI);
+        else { window.close(); saida.textContent = 'Feche esta aba do navegador para sair.'; }
+      };
+    });
+  }
+  ligarFim(fim);
 
   // ---------- Bloco 3: atalho de teste e tela de instrução com animação ----------
   const B3_INI = track.children.length;   // tela de instrução do bloco 3
@@ -1617,6 +1699,25 @@
     </div>`;
   track.appendChild(b3Etapa1);
   b3Etapa1.querySelector('[data-prev]').onclick = () => go(B3_INI);
+
+  // Tela ao terminar o bloco 3: o último gráfico da etapa leva para cá
+  const b3Fim = document.createElement('section');
+  b3Fim.className = 'slide';
+  b3Fim.innerHTML = `
+    <div class="wrap center">
+      <h1>Bloco 3 concluído</h1>
+      <p class="lead">Escolha o que fazer agora.</p>
+      <div class="fim-botoes">
+        <button class="primary" data-fim="bloco1">Retornar para Bloco 1</button>
+        <button class="primary" data-fim="bloco2">Retornar para Bloco 2</button>
+        <button class="primary" data-fim="bloco3">Retornar para Bloco 3</button>
+        <button class="primary" data-fim="sair">Sair</button>
+      </div>
+      <p class="note" id="saida"></p>
+    </div>`;
+  track.appendChild(b3Fim);
+  ligarFim(b3Fim);
+  const B3_FIM = track.children.length - 1;   // índice da tela de fim do bloco 3
 
   // Animação: a cruz do eixo x percorre o domínio (−3 a 4) e mostra os pontos destacados
   const B3F = x => -0.5 * Math.abs(x + 2) + 2;   // f(x) = −½|x + 2| + 2, domínio [−3, 4]
@@ -1728,6 +1829,7 @@
       ctx.fillStyle = '#ffffff'; ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.arc(gx, gy, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     } else dot(ctx, gx, gy, 6, CURVE);
+    rotulosEixos(ctx, b3c, b3Y(0), b3X(0));
   }
 
   // Cruz branca com contorno, como no restante do aplicativo
@@ -1954,6 +2056,7 @@
     // valores das coordenadas presos às cruzes: x sob a cruz do eixo x, y ao lado da cruz do eixo y
     eCaixa(ctx, fmt(xA), ax - 10, ay + 24, null, opts.alfa ?? 1);
     eCaixa(ctx, fmt(yG), cx + 10, cy - 8, null, opts.alfa ?? 1);
+    rotulosEixos(ctx, ctx.canvas, eY(0), eX(0));
   }
 
   // Caixa de texto opaca, para que o rótulo fique por cima do gráfico sem deixá-lo aparecer
@@ -2318,7 +2421,7 @@
     st.proximo.onclick = () => {
       if (!st.done) return;
       if (gi < eG.length - 1) eMostrar(gi + 1);
-      else go(B3_INI);
+      else go(B3_FIM);
     };
   });
 
