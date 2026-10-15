@@ -182,6 +182,8 @@
     .toque.on { animation: none; }
   }
 </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="deck">
@@ -1585,24 +1587,19 @@
   const b3Tela = document.createElement('section');
   b3Tela.className = 'slide';
   b3Tela.innerHTML = `
-    <div class="wrap">
-      <header class="stage-top">
-        <p class="titulo">Bloco 3 · Descubra com o gráfico</p>
-        <p class="identificacao">Reconhecimento e familiarização</p>
+    <div class="b3-app">
+      <header class="b3-cab">
+        <p class="b3-t1">Descubra com o Gráfico</p>
+        <p class="b3-t2">André Silva - IFRJ - 2026 - v.01</p>
       </header>
-      <div class="card-sec">
+      <div class="b3-corpo">
         <p class="b3-texto">Neste bloco você vai explorar gráficos a partir dos valores do domínio e da imagem. Os gráficos são representados com a seguinte convenção:</p>
-        <ul class="b3-lista">
-          <li>pontos cheios na ponta da linha que é o gráfico significam o primeiro ou o último ponto do gráfico;</li>
-          <li>ponto vazio na ponta significa que o gráfico termina sem que este ponto pertença a ele;</li>
-          <li>se ao passar por um ponto do gráfico este ponto se mostrar em destaque, ele é um ponto extremo, ou um intercepto com o eixo x ou y.</li>
-        </ul>
-        <div class="gwrap"><canvas class="b3c" width="360" height="300" aria-label="Animação de exploração do gráfico"></canvas></div>
+        <div class="gwrap b3-gw"><canvas class="b3c" width="360" height="300" aria-label="Animação de exploração do gráfico"></canvas></div>
       </div>
-      <div class="actions">
-        <button data-prev>← Voltar</button>
-        <button class="primary" data-b3-continuar>Continuar →</button>
-      </div>
+    </div>
+    <div class="actions">
+      <button data-prev>← Voltar</button>
+      <button class="primary" data-b3-continuar>Continuar →</button>
     </div>`;
   track.appendChild(b3Tela);
   b3Tela.querySelector('[data-prev]').onclick = () => go(B3_INI - 1);
@@ -1630,6 +1627,51 @@
   const b3X = x => (x + 4.5) * 40;     // 40 px por unidade (escala igual nos dois eixos)
   const b3Y = y => 300 - (y + 2.5) * 40;
 
+  // Textos e setas à mão, que aparecem quando a cruz passa pelo ponto destacado
+  const B3_LARANJA = '#FF6633', B3_VERMELHO = '#E8321E';
+  const B3_NOTAS = [
+    { txt: ['Ponto do', 'Gráfico'], cor: CURVE, thr: -3, pos: [14, 86], seta: [[56, 116], [66, 138]] },
+    { txt: ['Extremo'], cor: B3_LARANJA, thr: -2, pos: [60, 58], seta: [[118, 68], [106, 110]] },
+    { txt: ['Interceptos'], cor: B3_VERMELHO, thr: 2, pos: [196, 58], seta: [[236, 80], [196, 144]], seta2: [[252, 84], [262, 184]] },
+    { txt: ['Não é Ponto do Gráfico'], cor: CURVE, thr: 3.7, pos: [96, 284], seta: [[306, 276], [336, 252]] }
+  ];
+
+  // Seta à mão: curva levemente ondulada, com ponta
+  function b3Seta(ctx, pts, frac) {
+    if (frac <= 0) return;
+    const [p0, p1] = pts;
+    const cx = (p0[0] + p1[0]) / 2 + 8, cy = (p0[1] + p1[1]) / 2 - 6;
+    const n = 24, k = Math.max(1, Math.floor(n * frac));
+    ctx.strokeStyle = ctx.fillStyle; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let i = 0; i <= k; i++) {
+      const u = i / n;
+      const x = (1 - u) * (1 - u) * p0[0] + 2 * (1 - u) * u * cx + u * u * p1[0];
+      const y = (1 - u) * (1 - u) * p0[1] + 2 * (1 - u) * u * cy + u * u * p1[1] + Math.sin(i * 1.7) * 0.8;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    if (frac >= 1) {
+      const ang = Math.atan2(p1[1] - cy, p1[0] - cx), L = 11;
+      ctx.beginPath();
+      ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p1[0] - L * Math.cos(ang - 0.5), p1[1] - L * Math.sin(ang - 0.5));
+      ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p1[0] - L * Math.cos(ang + 0.5), p1[1] - L * Math.sin(ang + 0.5));
+      ctx.stroke();
+    }
+  }
+
+  // Texto à mão, escrito letra a letra
+  function b3Escrita(ctx, linhas, x, y, frac, cor) {
+    const total = linhas.reduce((a, l) => a + l.length, 0), k = Math.floor(total * frac);
+    let feitas = 0;
+    ctx.fillStyle = cor; ctx.font = '600 21px Caveat, "Comic Sans MS", cursive'; ctx.textAlign = 'left';
+    linhas.forEach((l, i) => {
+      const n = Math.max(0, Math.min(l.length, k - feitas));
+      if (n > 0) ctx.fillText(l.slice(0, n), x, y + i * 22);
+      feitas += l.length;
+    });
+  }
+
   function b3Desenhar(t) {
     const ctx = b3ctx, W = b3c.width, H = b3c.height;
     const T = t % B3_CICLO;
@@ -1652,25 +1694,40 @@
     }
     ctx.stroke();
 
-    // extremidades do domínio: cheias (o gráfico inclui os dois extremos)
+    // extremidades: início cheio; fim vazio, com interior branco e borda roxa
     dot(ctx, b3X(-3), b3Y(B3F(-3)), 6, CURVE);
-    dot(ctx, b3X(4), b3Y(B3F(4)), 6, CURVE);
+    ctx.fillStyle = '#ffffff'; ctx.strokeStyle = CURVE; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(b3X(4), b3Y(B3F(4)), 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
-    // pontos destacados conforme a cruz passa por eles
-    const anel = (px, py) => { ctx.strokeStyle = SEG; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI * 2); ctx.stroke(); };
-    if (x >= -2) anel(b3X(-2), b3Y(2));    // máximo
-    if (x >= 2) anel(b3X(2), b3Y(0));      // intercepto com o eixo x
-    if (x >= 0) anel(b3X(0), b3Y(1));      // intercepto com o eixo y
-    if (x >= 4 || T < 1000) { /* extremidades já cheias acima */ }
+    // destaques: extremo em laranja, interceptos em vermelho
+    if (x >= -2) { dot(ctx, b3X(-2), b3Y(2), 10, 'rgba(255,102,51,.35)'); dot(ctx, b3X(-2), b3Y(2), 7, B3_LARANJA); }
+    if (x >= 0) dot(ctx, b3X(0), b3Y(1), 7, B3_VERMELHO);
+    if (x >= 2) dot(ctx, b3X(2), b3Y(0), 7, B3_VERMELHO);
 
-    // âncoras: cruz em A (eixo x), G na curva e cruz em C (eixo y)
+    // textos e setas à mão, conforme a cruz passa pelos pontos
+    B3_NOTAS.forEach(nota => {
+      const frac = Math.max(0, Math.min(1, (x - nota.thr) / 0.3));
+      if (frac <= 0 || T < 1000) return;
+      ctx.save();
+      ctx.strokeStyle = nota.cor; ctx.fillStyle = nota.cor;
+      b3Escrita(ctx, nota.txt, nota.pos[0], nota.pos[1], frac, nota.cor);
+      b3Seta(ctx, nota.seta, Math.min(1, frac * 1.5));
+      if (nota.seta2) b3Seta(ctx, nota.seta2, Math.min(1, frac * 1.5));
+      ctx.restore();
+    });
+
+    // âncoras e cruzes: A no eixo x, G na curva e C no eixo y
     const yG = B3F(x), ax = b3X(x), ay = b3Y(0), gx = b3X(x), gy = b3Y(yG), cy = b3Y(yG);
     ctx.setLineDash([4, 4]); ctx.strokeStyle = CURVE; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(gx, gy); ctx.moveTo(gx, gy); ctx.lineTo(b3X(0), cy); ctx.stroke();
     ctx.setLineDash([]);
     cruz(ctx, ax, ay);
     cruz(ctx, b3X(0), cy);
-    dot(ctx, gx, gy, 6, CURVE);
+    // o ponto que viaja fica vazio (branco com borda roxa) ao parar no ponto final
+    if (x >= B3_DOM[1] - 0.001) {
+      ctx.fillStyle = '#ffffff'; ctx.strokeStyle = CURVE; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(gx, gy, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    } else dot(ctx, gx, gy, 6, CURVE);
   }
 
   // Cruz branca com contorno, como no restante do aplicativo
@@ -1736,7 +1793,9 @@
     .b3-cartao .resp { width: 23px; padding: 2px 0; font: inherit; font-size: .9rem; text-align: center; border: 1.5px solid var(--roxo); border-radius: 6px; background: #fff; color: var(--tinta); }
     .b3-g .gwrap { touch-action: none; user-select: none; -webkit-user-select: none; }
     .b3-g .gwrap canvas { touch-action: none; }
-    .b3-app { max-width: 480px; margin: 8px auto; background: var(--papel); border: 2px solid var(--roxo); border-radius: 16px; overflow: hidden; }
+    .b3-app { max-width: 480px; margin: 16px auto; background: var(--papel); border: 1px solid var(--borda); border-radius: 14px; overflow: hidden; }
+    .b3-texto { margin: 0 0 12px; color: var(--tinta); text-align: left; }
+    .b3-corpo .b3-gw { margin-top: 0; }
     .b3-cab { background: var(--roxo); color: #fff; text-align: center; padding: 14px 12px; min-height: 64px; }
     .b3-cab .b3-t1 { margin: 0; font-size: 1.25rem; font-weight: 700; }
     .b3-cab .b3-t2 { margin: 2px 0 0; font-size: .85rem; opacity: .9; }
