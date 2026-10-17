@@ -238,7 +238,10 @@
   .mancha-liquida { position: relative; display: inline-block; font-weight: 800; padding: 0 4px; }
   .mancha-liquida::before { content: ''; position: absolute; inset: -4px -9px; z-index: -1; pointer-events: none;
     background: rgba(151, 95, 168, .38); border-radius: 42% 58% 55% 45% / 52% 40% 60% 48%; animation: liquido 3.4s ease-in-out infinite; }
-  .d3-previa { font-size: 1.12rem; }   /* mesmo aspecto do convite da etapa 1, com texto um pouco menor por ser mais longo */
+  .d3-previa { font-size: 1.12rem; }
+  /* mão que indica o toque num ponto (etapa 2: incluir ou excluir a extremidade) */
+  .d2-mao.tocar { animation: maoToca .9s ease-in-out infinite; }
+  @keyframes maoToca { 0%, 100% { transform: translate(-6px, 8px); } 50% { transform: translate(-6px, -1px); } }   /* mesmo aspecto do convite da etapa 1, com texto um pouco menor por ser mais longo */
   @media (prefers-reduced-motion: reduce) { .mancha-liquida::before { animation: none; } }
   @media (prefers-reduced-motion: reduce) { .mapa button.atual { animation: none; box-shadow: 0 0 0 3px rgba(255, 102, 51, .6); } }
   .b3-corpo .stage-top { padding-top: 0; }
@@ -360,13 +363,8 @@
               <label>Código da turma<input name="turma" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="QIM211-262"></label>
               <button class="primary" type="submit">Cadastrar e entrar</button>
             </form>
-            <form id="fSemLogin" class="form-acesso" novalidate hidden>
-              <label>Seu nome<input name="nome" autocomplete="name" placeholder="seu nome"></label>
-              <label>Código da turma<input name="turma" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="QIM211-262"></label>
-              <button class="primary" type="submit">Começar sem enviar</button>
-            </form>
             <p class="msg-acesso" id="msgAcesso" role="status"></p>
-            <button type="button" class="link" id="semLogin">Usar sem login (nada é enviado ao professor)</button>
+            <button type="button" class="link" id="semLogin">Entrar sem identificação (nada fica registrado)</button>
             <p class="note aviso-dados" id="avisoDados">Ao entrar, suas respostas nesta atividade são registradas e enviadas ao professor da turma.</p>
           </div>
           <!-- boas-vindas: carinha de entrada e retomada do percurso -->
@@ -386,15 +384,8 @@
       </div>
     </section>
 
-    <!-- Slide 1: instruções com mini-tutorial -->
+    <!-- Slide 1: instruções com mini-tutorial (sem o cabeçalho roxo) -->
     <section class="slide">
-      <header class="hero">
-        <img src="ifrj_logo_branca.png" alt="Logo do IFRJ Campus Nilópolis">
-        <div class="teacher">
-          <div>Matemática</div>
-          <div>Prof. André Silva</div>
-        </div>
-      </header>
       <div class="wrap">
         <div class="card-sec">
           <h2><span class="num">i</span> Como usar</h2>
@@ -408,15 +399,12 @@
             <div class="dedo" id="dedo" hidden>👆🏾</div>
           </div>
 
-          <div class="actions">
-            <button id="verDeNovo">Ver de novo</button>
-            <button id="pular">Pular</button>
+          <div class="b3-acoes">
+            <button type="button" id="sairTutorial"><span class="ic">✕</span>Sair</button>
+            <button type="button" id="verDeNovo"><span class="ic">↺</span>Ver de novo</button>
+            <button type="button" id="pular">Pular</button>
+            <button type="button" class="laranja" id="comecarBtn" disabled><span class="ic">▶</span>Começar</button>
           </div>
-        </div>
-
-        <div class="actions">
-          <button data-prev>← Voltar</button>
-          <button class="primary" id="comecarBtn" data-go="2" disabled>Começar →</button>
         </div>
       </div>
     </section>
@@ -1588,7 +1576,7 @@
         if (window.katex) return katex.renderToString(f, { throwOnError: false });
         return f.replace(/\\infty/g, '∞').replace(/\\cup/g, '∪').replace(/\\mathbb\{R\}/g, 'IR').replace(/\{,\}/g, ',')
           .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '$1/$2').replace(/\\sqrt\{([^}]*)\}/g, '√($1)')
-          .replace(/\\left|\\right/g, '').replace(/-/g, '−');
+          .replace(/\\left|\\right/g, '').replace(/\\math(open|close)\{(.)\}/g, '$2').replace(/-/g, '−').replace(/\\ /g, ' ').replace(/[{}]/g, '');
       }
       return parte.replace(/&/g, '&amp;').replace(/</g, '&lt;');
     }).join('');
@@ -1726,10 +1714,10 @@
   // Intervalos e faixas em LaTeX, como aparecem nas animações do bloco 1
   const IR_TEX = '$\\mathbb{R}$ (todos os reais)';
   const texIntervalos = ivs => ivs.length
-    ? '$' + ivs.map(iv => `(${iv.aInf ? '-\\infty' : fT(iv.a)}, ${iv.bInf ? '+\\infty' : fT(iv.b)})`).join(' \\cup ') + '$'
+    ? '$' + ivs.map(iv => `\\mathopen{]}{${iv.aInf ? '-\\infty' : fT(iv.a)}},\\ {${iv.bInf ? '+\\infty' : fT(iv.b)}}\\mathclose{[}`).join(' \\cup ') + '$'
     : 'Nenhum intervalo';
   const texFaixa = ([a, b]) => (a === -Infinity && b === Infinity) ? IR_TEX
-    : `$${a === -Infinity ? '(-\\infty' : '[' + fT(a)}, ${b === Infinity ? '+\\infty)' : fT(b) + ']'}$`;
+    : `$${a === -Infinity ? '\\mathopen{]}{-\\infty}' : '[{' + fT(a) + '}'},\\ ${b === Infinity ? '{+\\infty}\\mathclose{[}' : '{' + fT(b) + '}]'}$`;
   const embaralhar = arr => arr.map(v => [Math.random(), v]).sort((u, v) => u[0] - v[0]).map(u => u[1]);
 
   // Pergunta, resposta certa e duas erradas plausíveis (confusões comuns: x com y, janela com domínio,
@@ -1744,11 +1732,11 @@
     if (prop === 'dominio') {
       texto = 'Qual é o intervalo no qual estão todas as coordenadas $x$ dos pontos do gráfico?';
       certa = texFaixa(fn.dom);
-      pool = [texFaixa(fn.img), `$(${fT(w.x0)}, ${fT(w.x1)})$`, certa === IR_TEX ? '$[0, +\\infty)$' : IR_TEX];
+      pool = [texFaixa(fn.img), `$\\mathopen{]}{${fT(w.x0)}},\\ {${fT(w.x1)}}\\mathclose{[}$`, certa === IR_TEX ? '$[0,\\ {+\\infty}\\mathclose{[}$' : IR_TEX];
     } else if (prop === 'imagem') {
       texto = 'Qual é o intervalo no qual estão todas as coordenadas $y$ dos pontos do gráfico?';
       certa = texFaixa(fn.img);
-      pool = [texFaixa(fn.dom), `$(${fT(WIN.y0)}, ${fT(WIN.y1)})$`, certa === IR_TEX ? '$[0, +\\infty)$' : IR_TEX];
+      pool = [texFaixa(fn.dom), `$\\mathopen{]}{${fT(WIN.y0)}},\\ {${fT(WIN.y1)}}\\mathclose{[}$`, certa === IR_TEX ? '$[0,\\ {+\\infty}\\mathclose{[}$' : IR_TEX];
     } else if (opostos[prop]) {
       texto = {
         positiva: 'Para quais valores de $x$ os pontos do gráfico ficam acima do eixo $x$?',
@@ -1789,7 +1777,7 @@
   const B2_GRAFICOS = [
     { f: x => (-1 / 3) * (x - 2) * (x + 4), tex: '$f(x) = -\\dfrac{1}{3}(x - 2)(x + 4)$' },
     { f: x => -Math.abs((2 / 3) * (x - 2)) + 2, tex: '$g(x) = -\\left|\\dfrac{2}{3}(x - 2)\\right| + 2$' },
-    { f: x => Math.sqrt(x + 4) - 2, tex: '$h(x) = \\sqrt{x + 4} - 2$' }
+    { f: x => Math.sqrt(x + 4) - 2, inicio: [-4, -2], tex: '$h(x) = \\sqrt{x + 4} - 2$' }
   ];
 
   // Etapas do bloco 2. alvos[g] = extremidades corretas do gráfico g (±INF = sem limite).
@@ -1802,10 +1790,10 @@
     { id: 'imagem', nome: 'Imagem', eixo: 'y', seg: true, rotulos: true,
       alvos: [[3, -INF], [2, -INF], [-2, INF]],
       instr: ['Arraste os dois pontos até as extremidades da imagem.'] },
-    { id: 'positivo', nome: 'Sinal positivo', eixo: 'x', seg: true, rotulos: true,
+    { id: 'positivo', nome: 'Sinal positivo', eixo: 'x', seg: true, rotulos: true, aberto: true,
       alvos: [[-4, 2], [-1, 5], [0, INF]],
       instr: ['Arraste os pontos até os limites dos intervalos em que a função é positiva.'] },
-    { id: 'negativo', nome: 'Sinal negativo', eixo: 'x', seg: true, rotulos: true,
+    { id: 'negativo', nome: 'Sinal negativo', eixo: 'x', seg: true, rotulos: true, aberto: true,
       alvos: [[-INF, -4, 2, INF], [-INF, -1, 5, INF], [-4, 0]],
       instr: ['Arraste os pontos até os limites dos intervalos em que a função é negativa.'] },
     { id: 'extremos', nome: 'Extremos', tipo: 'extremo', pergunta: true,
@@ -2002,6 +1990,8 @@
       ctx.strokeStyle = CURVE; ctx.lineWidth = 3;
       tracar(null);
     }
+    // extremidade do gráfico que pertence a ele (em h, o ponto (−4, −2)): ponto roxo
+    if (G.inicio) dot(ctx, b2X(G.inicio[0]), b2Y(G.inicio[1]), 6, CURVE);
     // rótulos dos eixos: abaixo dos pontos, cruzes e valores
     rotulosEixos(ctx, c, b2Y(0), b2X(0));
 
@@ -2048,6 +2038,14 @@
       ctx.font = 'bold 14px system-ui';
       numLabel(ctx, c, fmt(alvos[0]), b2X(0) + 12, b2Y(alvos[0]) - 6, 'left');
     }
+
+    // extremidades agarradas: ponto laranja cheio (pertence ao intervalo) ou vazio (não pertence).
+    // Nos sinais, a função vale zero nas extremidades: elas não pertencem; nas demais etapas, pertencem.
+    if (et.seg && alvos) est.pts.forEach(p => {
+      if (p.claim < 0 || !Number.isFinite(alvos[p.claim])) return;
+      const q = b2Pos(et.eixo, alvos[p.claim]);
+      pontoLaranja(ctx, q.x, q.y, 7, !!et.aberto);
+    });
 
     // pontos livres e valores das extremidades agarradas
     ctx.font = 'bold 14px system-ui';
@@ -2434,7 +2432,7 @@
         if (acao === 'bloco1') go(2);
         else if (acao === 'bloco2') go(B2_BASE);
         else if (acao === 'bloco3') go(B3_INI);
-        else if (sessao) abrirSair();
+        else if (sessao && sessao.modo !== 'anonimo') abrirSair(false);
         else { window.close(); saida.textContent = 'Feche esta aba do navegador para sair.'; }
       };
     });
@@ -2444,18 +2442,22 @@
   // ---------- Bloco 3: atalho de teste e tela de instrução com animação ----------
   const B3_INI = track.children.length;   // tela de instrução do bloco 3
 
-  // ATALHOS DE TESTE na tela inicial: ir direto aos blocos 2 e 3.
-  // Retirar na versão final (apagar este trecho até o insertBefore).
-  const cardInicial = track.children[0].querySelector('.card-sec');
-  const atalhos = document.createElement('div');
-  atalhos.style.cssText = 'display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px';
-  [['Ir direto ao Bloco 2 (teste)', B2_BASE], ['Ir direto ao Bloco 3 (teste)', B3_INI]].forEach(([texto, tela]) => {
-    const b = document.createElement('button');
-    b.textContent = texto;
-    b.onclick = () => go(tela);
-    atalhos.appendChild(b);
-  });
-  cardInicial.insertBefore(atalhos, cardInicial.firstChild);
+  // VERSÃO: false = versão final para os estudantes; true = versão de estudo do professor, com atalhos
+  // na tela inicial para ir direto aos blocos 2 e 3.
+  const MODO_PROFESSOR = false;
+  if (MODO_PROFESSOR) {
+    const cardInicial = track.children[0].querySelector('.card-sec');
+    const atalhos = document.createElement('div');
+    atalhos.style.cssText = 'display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px';
+    atalhos.innerHTML = '<p class="note" style="width:100%;margin:0">Versão de estudo do professor</p>';
+    [['Ir direto ao Bloco 2', B2_BASE], ['Ir direto ao Bloco 3', B3_INI]].forEach(([texto, tela]) => {
+      const b = document.createElement('button');
+      b.textContent = texto;
+      b.onclick = () => go(tela);
+      atalhos.appendChild(b);
+    });
+    cardInicial.insertBefore(atalhos, cardInicial.firstChild);
+  }
 
   // Tela de instrução com a animação de exploração
   const b3Tela = document.createElement('section');
@@ -3181,7 +3183,11 @@
       if (st.ajudaAtiva || st.movendo || st.fase === 'bloqueado') return;
       const q = coords(e), yG = eG[gi].f(st.x);
       if (Math.hypot(eX(st.x) - q.x, eY(0) - q.y) < 28) st.drag = 'A';
-      else if (Math.hypot(eX(0) - q.x, eY(yG) - q.y) < 28) st.drag = 'C';
+      else if (Math.hypot(eX(0) - q.x, eY(yG) - q.y) < 28) {
+        st.drag = 'C';
+        // para o professor: o estudante usou a cruz do eixo y (caminho de y para x)?
+        if (!st.usouCruzY) { st.usouCruzY = true; registrar('b3_cruz_y', { bloco: 3, etapa: 1, grafico: gi + 1 }); }
+      }
       if (st.drag) st.canvas.setPointerCapture(e.pointerId);
     });
     st.canvas.addEventListener('pointermove', e => {
@@ -3232,7 +3238,7 @@
         const certo = v !== null && (Math.abs(v - Number(i.dataset.v)) <= 0.05 || (alt !== null && Math.abs(v - alt) <= 0.05));
         if (!certo) ok = false;
       });
-      registrar('b3_checar', { bloco: 3, etapa: 1, grafico: gi + 1, certo: ok,
+      registrar('b3_checar', { bloco: 3, etapa: 1, grafico: gi + 1, certo: ok, usouCruzY: !!st.usouCruzY,
         respostas: Object.fromEntries([...valores].map(i => [i.dataset.k, i.value])) });
       if (!ok) { st.msg.textContent = 'Confira as respostas e tente de novo.'; return; }
       // caixas certas: falta o caminho inverso, do registro f(x) = valor para o ponto do gráfico
@@ -3325,7 +3331,8 @@
     return { lo, hi, loIn: Number.isFinite(lo) && !seg.ab[i], hiIn: Number.isFinite(hi) && !seg.ab[j] };
   }
   // intervalo em LaTeX: colchete na extremidade incluída, parêntese na não incluída e no infinito
-  const texSeg = (seg, fx = texNum) => { const n = dNorm(seg); return `${n.loIn ? '[' : '('}${fx(n.lo)},\\ ${fx(n.hi)}${n.hiIn ? ']' : ')'}`; };
+  // colchete voltado para dentro: extremidade pertence; voltado para fora (]a, b[): não pertence (e no infinito)
+  const texSeg = (seg, fx = texNum) => { const n = dNorm(seg); return `${n.loIn ? '[' : '\\mathopen{]}'}{${fx(n.lo)}},\\ {${fx(n.hi)}}${n.hiIn ? ']' : '\\mathclose{[}'}`; };
   const texUniao = (segs, fx = texNum) => segs.length
     ? segs.slice().sort((p, q) => Math.min(...p.v) - Math.min(...q.v)).map(sg => texSeg(sg, fx)).join(' \\cup ') : '\\varnothing';
   const dIgual = (u, v) => u === v || (Number.isFinite(u) && Number.isFinite(v) && Math.abs(u - v) < 0.06);
@@ -3512,17 +3519,34 @@
 
     // textos abaixo do gráfico, atualizados enquanto os pontos se movem
     function textos(gi) {
-      const st = est[gi], [l1, l2] = cfg.linhas(cfg.graficos[gi], st);
-      st.txt1.innerHTML = comTex(l1);
-      st.txt2.innerHTML = comTex(l2);
+      const st = est[gi], ls = cfg.linhas(cfg.graficos[gi], st);
+      while (st.textos.children.length < ls.length) st.textos.appendChild(document.createElement('p'));
+      ls.forEach((l, i) => { st.textos.children[i].innerHTML = comTex(l); });
     }
     // mão que indica o arraste: logo abaixo da primeira extremidade do eixo x
     function mao(gi) {
-      J = janelaDe(cfg.graficos[gi]);
-      const st = est[gi], q = dPos('x', Math.min(...st.segs.x[0].v));
-      st.mao.hidden = st.arrastou || st.done || !st.previaVista;   // com prévia, a mão aparece depois de fechá-la
+      const G = cfg.graficos[gi], st = est[gi];
+      J = janelaDe(G);
+      // com os valores certos, mas uma extremidade incluída/excluída errada, a mão indica o toque nesse ponto
+      const alvo = cfg.dicaToque && st.previaVista && !st.done && !st.efeito ? pontoParaTocar(G, st) : null;
+      const q = alvo ? dPos(alvo.eixo, alvo.v) : dPos('x', Math.min(...st.segs.x[0].v));
+      st.mao.classList.toggle('tocar', !!alvo);
+      st.mao.hidden = !alvo && (st.arrastou || st.done || !st.previaVista);   // com prévia, a mão aparece depois de fechá-la
       st.mao.style.left = `${(q.x / D_W) * 100 - 3}%`;
       st.mao.style.top = `${(q.y / D_H) * 100 + 2}%`;
+    }
+    // extremidade com valor certo e inclusão errada (só quando todos os valores estão certos)
+    function pontoParaTocar(G, st) {
+      const pedidos = [['x', G.pedidoX], ['y', G.pedidoY]].filter(([, pd]) => pd);
+      if (!pedidos.every(([eixo, pd]) => segsCertos(st.segs[eixo], pd.certo, false))) return null;
+      for (const [eixo, pd] of pedidos) {
+        const a = st.segs[eixo].map(dNorm).sort((u, v) => u.lo - v.lo), b = pd.certo.slice().sort((u, v) => u.lo - v.lo);
+        for (let i = 0; i < a.length; i++) {
+          if (Number.isFinite(a[i].lo) && a[i].loIn !== b[i].loIn) return { eixo, v: a[i].lo };
+          if (Number.isFinite(a[i].hi) && a[i].hiIn !== b[i].hiIn) return { eixo, v: a[i].hi };
+        }
+      }
+      return null;
     }
     function mostrar(gi) {
       cfg.secao.querySelectorAll('.d2-g').forEach((el, i) => { el.hidden = i !== gi; });
@@ -3555,13 +3579,13 @@
             <div class="d2-mao" aria-hidden="true">👆🏾</div>
             ${cfg.previa ? '<div class="b3-bloq d3-previa" role="button" tabindex="0"></div>' : ''}
           </div>
-          <div class="b3-resp d2-textos" aria-live="polite"><p data-l1></p><p data-l2></p></div>
+          <div class="b3-resp d2-textos" aria-live="polite"></div>
           <p class="b3-msg note"></p>
           <div class="b3-acoes">
             <button data-voltar><span class="ic">↩</span>Voltar</button>
             <button class="primary" data-conferir><span class="ic">✔</span>Checar</button>
             <button data-recomecar><span class="ic">↺</span>Recomeçar</button>
-            <button class="laranja" data-proximo disabled><span class="ic">▶</span>Próximo</button>
+            <button class="laranja" data-proximo disabled>${cfg.fim && gi === cfg.graficos.length - 1 ? '<span class="ic">★</span>FIM' : '<span class="ic">▶</span>Próximo'}</button>
           </div>
           <p class="b3-aviso">Você pode testar quantas vezes quiser. Quando quiser saber se acertou, use Checar.</p>
         </div>`;
@@ -3578,8 +3602,7 @@
       } else box.querySelector('.d2-instr').innerHTML = comTex(cfg.instrucao(G));
       st.canvas = box.querySelector('canvas');
       st.mao = box.querySelector('.d2-mao');
-      st.txt1 = box.querySelector('[data-l1]');
-      st.txt2 = box.querySelector('[data-l2]');
+      st.textos = box.querySelector('.d2-textos');
       st.msg = box.querySelector('.b3-msg');
       st.proximo = box.querySelector('[data-proximo]');
 
@@ -3604,7 +3627,7 @@
         if (!melhor) return;
         st.drag = Object.assign(melhor, { moveu: false });
         st.canvas.setPointerCapture(e.pointerId);
-        if (!st.arrastou) { st.arrastou = true; mao(gi); }   // a mão some quando o arraste começa
+        if (!st.arrastou) { st.arrastou = true; mao(gi); }   // a mão do arraste some quando o arraste começa
       });
       st.canvas.addEventListener('pointermove', e => {
         if (!st.drag) return;
@@ -3622,7 +3645,7 @@
         }
         d.moveu = true;
         st.msg.textContent = '';
-        textos(gi); desenhar(gi);
+        textos(gi); desenhar(gi); mao(gi);
       });
       // um toque sem arrastar na extremidade finita alterna entre incluída e não incluída
       st.canvas.addEventListener('pointerup', () => {
@@ -3635,7 +3658,7 @@
         const aberta = !seg.ab[d.k];
         st.segs[d.eixo].forEach(sg => sg.v.forEach((w, k) => { if (dIgual(w, v)) sg.ab[k] = aberta; }));
         st.msg.textContent = '';
-        textos(gi); desenhar(gi);
+        textos(gi); desenhar(gi); mao(gi);
       });
       st.canvas.addEventListener('pointercancel', () => { st.drag = null; });
 
@@ -3653,8 +3676,8 @@
         const errados = new Set(achados.map((a, i) => (a < 0 ? i : -1)).filter(i => i >= 0));
         const okP = !G.pontos || (errados.size === 0 && new Set(achados).size === G.pontos.length);
         if (G.pontos && !okP && errados.size === 0) st.pts.forEach((_, i) => errados.add(i));   // repetidos: todos tremem
-        const [l1, l2] = cfg.linhas(G, st);
-        registrar(cfg.evento, { bloco: 3, etapa: cfg.numero, grafico: gi + 1, linha1: l1, linha2: l2, certoX: okX, certoY: okY, certoPontos: okP });
+        const ls = cfg.linhas(G, st);
+        registrar(cfg.evento, { bloco: 3, etapa: cfg.numero, grafico: gi + 1, linhas: ls, certoX: okX, certoY: okY, certoPontos: okP });
         if (okX && okY && okP) {
           st.efeito = { tipo: 'onda', t0: performance.now(), dur: 1500, aoFim: () => {
             st.done = true;
@@ -3665,7 +3688,10 @@
           } };
         } else {
           st.efeito = { tipo: 'tremer', x: !okX, y: !okY, p: okP ? null : errados, t0: performance.now(), dur: 600 };
-          [[st.txt1, !okX], [st.txt2, !(okY && okP)]].forEach(([el, errado]) => {
+          // as linhas do eixo x (cfg.linhasX) tremem se os segmentos estão errados; as demais, se a imagem ou os pontos estão
+          const linhasX = cfg.linhasX || [0];
+          [...st.textos.children].forEach((el, i) => {
+            const errado = linhasX.includes(i) ? !okX : !(okY && okP);
             el.classList.remove('treme');
             if (errado) { void el.offsetWidth; el.classList.add('treme'); }
           });
@@ -3684,7 +3710,9 @@
       box.querySelector('[data-voltar]').onclick = () => { if (gi === 0) go(cfg.anterior()); else mostrar(gi - 1); };
       st.proximo.onclick = () => {
         if (!st.done) return;
-        if (gi < cfg.graficos.length - 1) mostrar(gi + 1); else go(cfg.seguinte());
+        if (gi < cfg.graficos.length - 1) mostrar(gi + 1);
+        else if (cfg.fim && sessao && sessao.modo !== 'anonimo') abrirSair(true);   // fim da atividade: a mesma janela do Sair, com a carinha final
+        else go(cfg.seguinte());
       };
     });
     cfg.graficos.forEach((_, gi) => { textos(gi); desenhar(gi); });
@@ -3720,7 +3748,9 @@
     secao: b3Etapa2, numero: 2, titulo: 'Domínio e Imagem', mapa: 1, faixaImagem: true, evento: 'b3_dominio_imagem',
     nomes: { x: 'o domínio', y: 'a imagem', p: '' },
     anterior: () => B3_INI + 1, seguinte: () => B3_E3,
-    instrucao: () => 'Arraste os pontos laranja: no eixo $x$, marque o domínio; no eixo $y$, marque a imagem. Leve um ponto até o fim do eixo para indicar o infinito. Toque num ponto para alternar entre incluído (cheio) e não incluído (vazio). Depois, toque em Checar.',
+    previa: true, dicaToque: true,
+    subtitulo: G => `<strong class="mancha-liquida">Domínio</strong> e <strong class="mancha-liquida">Imagem</strong> de ${G.nome}`,
+    instrucao: () => 'Toque aqui. Depois, arraste os pontos laranja: no eixo $x$, marque o domínio; no eixo $y$, a imagem. No fim do eixo, o ponto vira infinito. Toque num ponto para incluí-lo ou excluí-lo.',
     linhas: (G, st) => [`$\\text{Dom}(${G.nome}) = ${texUniao(st.segs.x)}$`, `$\\text{Img}(${G.nome}) = ${texUniao(st.segs.y)}$`],
     graficos: [
       { nome: 'f', f: x => x + 4, dom: [-4, Infinity], domIn: [true, false],
@@ -3777,7 +3807,7 @@
   const JANELA_PI = { x0: -3 * PI / 2, x1: 3 * PI / 2, y0: -3 * PI / 2, y1: 3 * PI / 2, passoX: PI / 2, rotuloX: rotuloPi };
   const E4 = criarEtapaD({
     secao: b3Etapa4, numero: 4, titulo: 'Sinais e Interceptos', mapa: 3, faixaImagem: false, iluminar: true, pontosVermelhos: true,
-    previa: true, evento: 'b3_sinais_interceptos',
+    previa: true, evento: 'b3_sinais_interceptos', fim: true, linhasX: [0, 1, 2],
     nomes: { x: 'os sinais', y: '', p: 'os interceptos' },
     anterior: () => B3_E3, seguinte: () => B3_FIM,
     subtitulo: G => `${G.nome}: <strong class="mancha-liquida">sinais</strong> e interceptos`,
@@ -3788,7 +3818,11 @@
       const pos = st.segs.x.filter(sg => sg.sinal === 'pos'), neg = st.segs.x.filter(sg => sg.sinal === 'neg');
       const postos = st.pts.filter(p => p.colocado).sort((a, b) => a.x - b.x).map(p => `$(${fx(p.x)},\\ ${texNum(p.y)})$`);
       const lista = postos.length ? (postos.length > 1 ? postos.slice(0, -1).join(', ') + ' e ' + postos[postos.length - 1] : postos[0]) : '—';
-      return [`Positiva em $${texUniao(pos, fx)}$; negativa em $${texUniao(neg, fx)}$.`, `Interceptos: ${lista}.`];
+      // zeros: as extremidades finitas marcadas como não incluídas (onde a função não é positiva nem negativa)
+      const zeros = [...new Set(st.segs.x.flatMap(sg => sg.v.filter((v, k) => Number.isFinite(v) && sg.ab[k])).map(v => +v.toFixed(6)))]
+        .sort((a, b) => a - b).map(v => `$x = ${fx(v)}$`);
+      const zero = zeros.length ? (zeros.length > 1 ? zeros.slice(0, -1).join(', ') + ' e ' + zeros[zeros.length - 1] : zeros[0]) : '—';
+      return [`Positiva em $${texUniao(pos, fx)}$.`, `Zero em ${zero}.`, `Negativa em $${texUniao(neg, fx)}$.`, `Interceptos: ${lista}.`];
     },
     graficos: [
       { nome: 'f', f: fg2, dom: [-Infinity, Infinity], domIn: [false, false],
@@ -3941,7 +3975,7 @@
   }
 
   function salvarLocal() {
-    if (!sessao) return null;
+    if (!sessao || sessao.modo === 'anonimo') return null;   // sem identificação, nada é salvo
     const e = capturarEstado();
     guardar.gravar(chave() + ':estado', e);
     return e;
@@ -3982,7 +4016,7 @@
 
   // ----- tela de acesso -----
   const acesso = document.getElementById('acesso'), boasVindas = document.getElementById('boasVindas');
-  const fEntrar = document.getElementById('fEntrar'), fCadastro = document.getElementById('fCadastro'), fSemLogin = document.getElementById('fSemLogin');
+  const fEntrar = document.getElementById('fEntrar'), fCadastro = document.getElementById('fCadastro');
   const msgAcesso = document.getElementById('msgAcesso');
   const ondeParou = document.getElementById('ondeParou');
   let estadoSalvo = null;
@@ -3991,12 +4025,18 @@
 
   function aviso(texto, erro) { msgAcesso.textContent = texto; msgAcesso.classList.toggle('erro', !!erro); }
   function mostrarForm(qual) {
-    fEntrar.hidden = qual !== 'entrar'; fCadastro.hidden = qual !== 'cadastro'; fSemLogin.hidden = qual !== 'semlogin';
+    fEntrar.hidden = qual !== 'entrar'; fCadastro.hidden = qual !== 'cadastro';
     acesso.querySelectorAll('[data-aba]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.aba === qual)));
     aviso('');
   }
   acesso.querySelectorAll('[data-aba]').forEach(b => { b.onclick = () => mostrarForm(b.dataset.aba); });
-  document.getElementById('semLogin').onclick = () => mostrarForm('semlogin');
+  // sem identificação: vai direto para "Como usar"; nada é registrado nem salvo (nem no aparelho)
+  document.getElementById('semLogin').onclick = () => {
+    sessao = { login: '', turma: '', nome: '', modo: 'anonimo' };
+    estadoSalvo = null;
+    destinoInicio = 2;
+    go(1);
+  };
 
   const limparTurma = v => String(v).trim().toUpperCase().replace(/\s+/g, '').replace(/[–—−]/g, '-');
   const limparLogin = v => String(v).trim().toLowerCase();
@@ -4054,13 +4094,6 @@
     });
   };
 
-  fSemLogin.onsubmit = ev => {
-    ev.preventDefault();
-    const nome = fSemLogin.nome.value.trim().replace(/\s+/g, ' '), turma = limparTurma(fSemLogin.turma.value);
-    if (nome.length < 2) return aviso('Informe seu nome.', true);
-    if (!RE_TURMA.test(turma)) return aviso(ERRO_TURMA, true);
-    iniciarSessao({ login: 'sem-login', turma, nome, modo: 'anonimo' }, null);
-  };
 
   function iniciarSessao(s, estadoServidor) {
     sessao = s;
@@ -4080,20 +4113,27 @@
     updateStart();
   }
 
+  // tela para onde "Como usar" leva (Começar ou Pular): a primeira etapa, ou onde o estudante parou
+  let destinoInicio = 2;
   continuarBtn.onclick = () => {
     if (!mood || !estadoSalvo) return;
     registrar('sessao_inicio', { humor: mood, retomada: true });
     restaurarEstado(estadoSalvo);
-    go(estadoSalvo.tela);
+    destinoInicio = estadoSalvo.tela;
+    go(1);
     enviarFila();
   };
   startBtn.onclick = () => {
     if (!mood) return;
     if (estadoSalvo && estadoSalvo.tela > 1 && !confirm('Começar de novo? O percurso salvo será substituído pelo novo.')) return;
     registrar('sessao_inicio', { humor: mood, retomada: false });
+    destinoInicio = 2;
     go(1);
     enviarFila();
   };
+  comecarBtn.onclick = () => { if (!comecarBtn.disabled) go(destinoInicio); };
+  pularBtn.onclick = () => { rodada++; go(destinoInicio); };
+  document.getElementById('sairTutorial').onclick = () => sairDaAtividade();
   document.getElementById('trocarUsuario').onclick = () => {
     sessao = null; estadoSalvo = null; mood = null;
     avBox.querySelectorAll('.avatar').forEach(x => x.setAttribute('aria-pressed', 'false'));
@@ -4108,16 +4148,24 @@
   document.body.appendChild(sairModal);
   let humorSaida = null;
 
-  function abrirSair() {
+  // botão Sair (cabeçalho e "Como usar"): com identificação, a janela de salvar; sem, volta ao início
+  function sairDaAtividade() {
+    if (!sessao) { go(0); return; }
+    if (sessao.modo === 'anonimo') { location.reload(); return; }
+    abrirSair(false);
+  }
+
+  // final: fim da atividade (botão FIM da última etapa); sem ele, é o "Sair" de qualquer tela
+  function abrirSair(final = false) {
     humorSaida = null;
     sairModal.innerHTML = `
-      <div class="card-sec center" role="dialog" aria-modal="true" aria-label="Sair e salvar">
-        <h2 style="justify-content:center">Sair e salvar</h2>
-        <p class="lead">Antes de sair: como você está se sentindo agora?</p>
+      <div class="card-sec center" role="dialog" aria-modal="true" aria-label="${final ? 'Fim da atividade' : 'Sair e salvar'}">
+        <h2 style="justify-content:center">${final ? 'Fim da atividade!' : 'Sair e salvar'}</h2>
+        <p class="lead">${final ? 'Parabéns, você chegou ao fim! Como você está se sentindo agora?' : 'Antes de sair: como você está se sentindo agora?'}</p>
         <div class="avatars" data-saida></div>
         <div class="actions" style="justify-content:center">
           <button type="button" data-ficar>Voltar à atividade</button>
-          <button type="button" class="primary" data-salvar disabled>Salvar e sair</button>
+          <button type="button" class="primary" data-salvar disabled>${final ? 'Salvar e enviar' : 'Salvar e sair'}</button>
         </div>
         <p class="note" data-msg></p>
       </div>`;
@@ -4138,7 +4186,8 @@
     salvarBtn.onclick = async () => {
       salvarBtn.disabled = true;
       sairModal.querySelector('[data-msg]').textContent = 'Salvando...';
-      registrar('sessao_fim', { humor: humorSaida, onde: ondeEsta(current) });
+      if (final) registrar('atividade_concluida', { humor: humorSaida });
+      registrar('sessao_fim', { humor: humorSaida, onde: ondeEsta(current), final });
       const e = salvarLocal();
       let completo = true;
       if (sessao.modo === 'servidor') {
@@ -4166,7 +4215,7 @@
     b.className = 'b3-sair';
     b.textContent = 'Sair';
     b.setAttribute('aria-label', 'Sair e salvar o percurso');
-    b.onclick = () => { if (sessao) abrirSair(); else go(0); };
+    b.onclick = () => sairDaAtividade();
     cab.appendChild(b);
   });
 
