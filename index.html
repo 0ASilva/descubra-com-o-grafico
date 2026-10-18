@@ -107,6 +107,131 @@
   /* título de etapa dentro da moldura (padrão do bloco 3) */
   .stage-top .b3-tit { font-size: 1.05rem; font-weight: 700; margin: 0; }
   .b3-acoes.b3-acoes-3 { grid-template-columns: repeat(3, 1fr); }
+  /* Quadro síntese (v37): 2 gráficos sorteados nítidos + 2 embaçados de "outra jornada" */
+  .mos-grade figure { position: relative; }
+  .mos-grade figure.oculto canvas { filter: blur(5px) saturate(.6); opacity: .75; }
+  .mos-outra { position: absolute; inset: 0 0 18px; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: var(--roxo); font-size: .82rem; text-shadow: 0 0 6px #fff, 0 0 12px #fff; }
+  .mosaico section[hidden] { display: none; }
+  button.mos-explicar, button.mos-enviar { display: block; width: 100%; margin-top: 10px; min-height: 46px; border: 0; border-radius: 12px;
+    background: var(--roxo); color: #fff; font-weight: 700; }
+  button.mos-enviar:disabled { opacity: .45; }
+  /* Explicação ao fim de cada etapa do bloco 1, com estrelas */
+  .exp-pergunta { margin: 0 0 8px; font-weight: 700; color: var(--tinta); font-size: 1.02rem; line-height: 1.35; text-align: left; }
+  .exp-premio { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 10px; padding: 8px 10px; border-radius: 12px; background: #fff;
+    border: 1.5px solid var(--borda); font-size: .86rem; color: var(--tinta); }
+  .exp-premio span { display: inline-flex; align-items: center; gap: 4px; }
+  .exp-premio b { color: var(--laranja); font-size: 1.15rem; line-height: 1; }
+  button.exp-inicio { display: inline-block; min-height: 0; margin: 0 0 8px; padding: 4px 10px; border-radius: 999px; border: 1.5px dashed var(--laranja);
+    background: #fff; color: var(--tinta); font-size: .85rem; text-align: left; }
+  .exp-texto { width: 100%; min-height: 96px; padding: 10px; font: inherit; border: 1.5px solid var(--roxo); border-radius: 12px; background: #fff;
+    color: var(--tinta); resize: vertical; }
+  .exp-conta { margin: 2px 0 0; text-align: right; font-size: .75rem; color: var(--tinta-fraca); }
+  .exp-privado { margin: 6px 0 0; font-size: .78rem; color: var(--tinta-fraca); text-align: center; }
+  button.exp-link { display: block; min-height: 0; margin: 6px auto 0; padding: 4px; border: 0; background: none; color: var(--roxo);
+    text-decoration: underline; font-size: .85rem; font-weight: 400; }
+  .exp-resposta { background: #fff; border: 1px solid var(--borda); border-radius: 12px; padding: 10px 12px; text-align: left; }
+  .exp-quem { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .exp-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--roxo); color: #fff; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; font-size: .85rem; flex: 0 0 auto; }
+  .exp-quem b { color: var(--roxo); }
+  .exp-quem small { color: var(--tinta-fraca); }
+  .exp-mostra { margin: 0; white-space: pre-wrap; }
+  .exp-estrelas { margin-top: 10px; display: grid; gap: 4px; text-align: left; }
+  .exp-estrela { display: flex; align-items: center; gap: 8px; font-size: .86rem; color: var(--tinta-fraca); }
+  .exp-estrela .s { font-size: 1.35rem; line-height: 1; width: 1.4rem; text-align: center; color: #cfc6dc; }
+  .exp-estrela.ganha { color: var(--tinta); }
+  .exp-estrela.ganha .s { color: var(--laranja); animation: brilhaEstrela .6s ease; }
+  @keyframes brilhaEstrela { 0% { transform: scale(.2) rotate(-40deg); } 60% { transform: scale(1.35) rotate(8deg); } 100% { transform: none; } }
+  /* Caderno de selos: botão no cabeçalho, janela com os selos e aviso de selo novo */
+  button.b3-caderno { position: absolute; top: 8px; left: 8px; min-height: 0; padding: 3px 10px; font-size: .75rem; font-weight: 700;
+    border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, .75); background: transparent; color: #fff; }
+  .caderno-modal { position: fixed; inset: 0; z-index: 46; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(36, 20, 54, .55); }
+  .caderno-modal[hidden] { display: none; }
+  .caderno-modal .card-sec { width: 100%; max-width: 440px; margin: 0; max-height: 92vh; overflow-y: auto; }
+  .selos-grade { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 10px 0; }
+  .selo-item { border: 1px solid var(--borda); border-radius: 12px; background: #fff; padding: 8px 6px; text-align: center; }
+  .selo-item .icone { width: 48px; height: 48px; margin: 0 auto 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; background: var(--roxo); box-shadow: 0 0 0 3px #FF6633; }
+  .selo-item.falta .icone { background: #E9E4F0; box-shadow: none; filter: grayscale(1); opacity: .55; }
+  .selo-item b { display: block; color: var(--roxo); font-size: .85rem; line-height: 1.25; }
+  .selo-item small { display: block; margin-top: 2px; color: var(--tinta-fraca); font-size: .74rem; line-height: 1.3; }
+  .selo-aviso { position: fixed; left: 50%; bottom: 18px; z-index: 55; max-width: 92vw; transform: translate(-50%, 160%); background: var(--roxo);
+    color: #fff; border-radius: 999px; padding: 10px 18px; font-weight: 700; white-space: nowrap; box-shadow: 0 8px 22px rgba(36, 20, 54, .3); transition: transform .4s ease; }
+  .selo-aviso.visivel { transform: translate(-50%, 0); }
+  /* Missão (depois do acesso e da carinha) */
+  .missao-modal { position: fixed; inset: 0; z-index: 47; display: flex; align-items: flex-start; justify-content: center; padding: 16px;
+    background: var(--papel); overflow-y: auto; }
+  .missao-modal[hidden] { display: none; }
+  .mi-cartao { width: 100%; max-width: 420px; margin: auto 0; background: var(--papel); border: 1px solid var(--borda); border-radius: 14px; overflow: hidden;
+    box-shadow: 0 10px 28px rgba(36, 20, 54, .10); animation: miEntra .5s ease; }
+  @keyframes miEntra { from { opacity: 0; transform: translateY(16px); } }
+  .mi-cab { background: var(--roxo); color: #fff; text-align: center; padding: 14px 12px; }
+  .mi-cab p { margin: 0; } .mi-cab .t1 { font-size: 1.25rem; font-weight: 700; } .mi-cab .t2 { font-size: .85rem; opacity: .9; }
+  .mi-corpo { padding: 16px; }
+  .mi-tag { display: block; font-size: .78rem; font-weight: 800; color: var(--laranja); text-transform: uppercase; letter-spacing: .06em; }
+  .mi-corpo h2 { margin: 4px 0 6px; font-size: 1.3rem; color: var(--roxo); line-height: 1.3; }
+  .mi-corpo p { margin: 0 0 12px; }
+  .mi-regioes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .mi-regioes li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 12px; background: #fff; }
+  .mi-regioes li.aberta { background: var(--papel2); border-color: var(--roxo); }
+  .mi-regioes .num { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: var(--roxo); color: #fff; font-weight: 800; font-size: .9rem; }
+  .mi-regioes li:not(.aberta) .num { background: #fff; color: var(--tinta-fraca); border: 2px solid var(--borda); }
+  .mi-regioes b { display: block; color: var(--roxo); }
+  .mi-regioes .desc { font-size: .85rem; color: var(--tinta-fraca); }
+  .mi-regioes .cadeado { margin-left: auto; font-size: 1.05rem; opacity: .7; }
+  /* região já percorrida: "Revisar" laranja, pulsando, no canto superior direito */
+  .mi-regioes li { position: relative; }
+  .mi-regioes li.feita .num { background: var(--laranja); color: #fff; border: 0; }
+  button.mi-revisar { position: absolute; top: 6px; right: 10px; min-height: 0; padding: 2px 4px; border: 0; background: none;
+    color: var(--laranja); font-size: .8rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; animation: miPulsa 1.4s ease-in-out infinite; }
+  @keyframes miPulsa { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.94); } }
+  .missao-tela { display: flex; justify-content: center; padding: 16px 0 24px; }
+  /* aposta da jornada: o gráfico misterioso atrás da cortina */
+  .ap-grafico { display: block; width: 100%; max-width: 300px; margin: 6px auto 10px; border-radius: 12px; box-shadow: 0 4px 14px rgba(36, 20, 54, .12); }
+  .ap-opcoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ap-opcoes button { min-height: 46px; border-radius: 12px; border: 1.5px solid var(--borda); background: #fff; color: var(--roxo); font-weight: 700; }
+  .ap-opcoes button[aria-pressed="true"] { background: var(--roxo); border-color: var(--roxo); color: #fff; }
+  .ap-opcoes button.certa { border-color: #2e9e5b; box-shadow: 0 0 0 2px #2e9e5b inset; }
+  .ap-guardada { margin: 12px 0 0; padding: 8px 12px; border-radius: 12px; background: var(--papel2); font-size: .92rem; }
+  .ap-guardada[hidden] { display: none; }
+  .mi-sorteio { margin: 12px 0 0; padding: 8px 12px; border-radius: 12px; background: #fff; border: 1.5px dashed var(--laranja); font-size: .9rem; }
+  button.mi-aceitar { display: block; width: 100%; margin-top: 14px; min-height: 52px; border-radius: 12px; border: 0; background: var(--laranja);
+    color: #fff; font-weight: 800; font-size: 1.05rem; }
+  /* Abertura animada (antes do acesso) */
+  .ab-tela { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px 16px; background: var(--papel); overflow: hidden; transition: opacity .45s ease; }
+  .ab-tela.saindo { opacity: 0; pointer-events: none; }
+  .ab-tela[hidden] { display: none; }
+  #ab-pular { position: fixed; top: 12px; right: 12px; z-index: 61; min-height: 0; padding: 6px 14px; border-radius: 999px;
+    border: 1.5px solid var(--borda); background: #fff; color: var(--roxo); font-size: .85rem; }
+  #ab-pular[hidden] { display: none; }
+  #ab-grafico { width: min(84vw, 320px); height: auto; border-radius: 14px; background: var(--fundo-grafico);
+    box-shadow: 0 10px 28px rgba(36, 20, 54, .16); opacity: 0; transform: scale(.92); transition: opacity .6s ease, transform .6s ease; }
+  #ab-grafico.visivel { opacity: 1; transform: scale(1); }
+  #ab-titulo { margin: 22px 0 0; font-size: clamp(1.6rem, 7vw, 2.1rem); color: var(--roxo); text-align: center; }
+  #ab-titulo span { display: inline-block; opacity: 0; transform: translateY(10px); transition: opacity .35s ease, transform .35s ease; white-space: pre; }
+  #ab-titulo.escrito span { opacity: 1; transform: none; }
+  .ab-lema { margin: 4px 0 0; font-family: Caveat, "Comic Sans MS", cursive; font-weight: 600; font-size: 1.55rem; color: var(--laranja);
+    opacity: 0; transition: opacity .8s ease; text-align: center; }
+  .ab-lema.visivel { opacity: 1; }
+  .ab-jornada { position: relative; display: flex; justify-content: space-between; width: min(90vw, 340px); margin: 22px 0 0; }
+  .ab-jornada::before { content: ''; position: absolute; left: 12%; right: 12%; top: 21px; border-top: 2.5px dashed var(--borda);
+    transform: scaleX(0); transform-origin: left; transition: transform 1s ease; }
+  .ab-jornada.visivel::before { transform: scaleX(1); }
+  .ab-regiao { position: relative; z-index: 1; width: 33%; text-align: center; opacity: 0; transform: translateY(8px); transition: opacity .45s ease, transform .45s ease; }
+  .ab-regiao.visivel { opacity: 1; transform: none; }
+  .ab-regiao .marca { width: 44px; height: 44px; margin: 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    background: #fff; border: 2.5px solid var(--roxo); color: var(--roxo); font-size: 1.25rem; font-weight: 800; }
+  .ab-regiao:first-child .marca { background: var(--roxo); color: #fff; box-shadow: 0 0 0 5px rgba(255, 102, 51, .35); }
+  .ab-regiao small { display: block; margin-top: 6px; font-size: .74rem; line-height: 1.25; color: var(--tinta-fraca); font-weight: 600; }
+  .ab-toque { margin: 26px 0 0; color: var(--roxo); font-weight: 700; opacity: 0; transition: opacity .6s ease; }
+  .ab-toque.visivel { opacity: 1; animation: abPulsa 1.3s ease-in-out infinite; }
+  @keyframes abPulsa { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) {
+    #ab-grafico, #ab-titulo span, .ab-lema, .ab-jornada::before, .ab-regiao, .ab-toque, .mi-cartao, .exp-estrela.ganha .s, button.mi-revisar { transition: none; animation: none; }
+  }
   /* Acesso: entrar, primeiro acesso e uso sem login */
   .abas { display: flex; gap: 6px; justify-content: center; margin: 4px 0 12px; }
   .abas button[aria-selected="true"] { background: var(--roxo); border-color: var(--roxo); color: #fff; font-weight: 700; }
@@ -200,7 +325,7 @@
   .mosaico .note { margin-bottom: 6px; font-size: .85rem; }
   .mos-botoes { display: flex; gap: 8px; justify-content: center; margin-bottom: 6px; }
   .mos-botoes button { min-height: 36px; padding: 4px 12px; }
-  .mos-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 6px; }
+  .mos-grade { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 8px; }
   .mos-grade figure { margin: 0; text-align: center; font-size: .72rem; color: var(--tinta-fraca); }
   .mos-grade canvas { display: block; width: 100%; height: auto; background: var(--fundo-grafico); border-radius: 6px; }
   /* o botão de seguir fica sempre visível na base do quadro, mesmo se o conteúdo rolar */
@@ -330,6 +455,439 @@
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
 </head>
 <body>
+<!-- Abertura animada (antes do acesso): um toque pula; no fim, um toque leva ao acesso -->
+<div id="ab-tela" class="ab-tela" aria-label="Abertura">
+  <button id="ab-pular" type="button">Pular</button>
+  <canvas id="ab-grafico" width="640" height="640" aria-label="Um boneco percorre o gráfico de uma função"></canvas>
+  <h1 id="ab-titulo" aria-label="Descubra com o Gráfico"></h1>
+  <p class="ab-lema" id="ab-lema">Todo gráfico conta uma história.</p>
+  <div class="ab-jornada" id="ab-jornada" aria-label="As três regiões da jornada">
+    <div class="ab-regiao"><div class="marca">1</div><small>O Observatório</small></div>
+    <div class="ab-regiao"><div class="marca">2</div><small>O Campo de Provas</small></div>
+    <div class="ab-regiao"><div class="marca">3</div><small>A Ponte das Representações</small></div>
+  </div>
+  <p class="ab-toque" id="ab-toque">Toque para começar</p>
+</div>
+<script>
+(() => {
+  // =====================================================================================
+  // Abertura v2 — o boneco no monociclo (roteiro do Prof. André)
+  // O monociclo rola sobre o eixo x (a roda é o ponto roxo); perto do eixo y vira escada e o boneco sobe,
+  // deixando um rastro avermelhado; na altura do ponto mais alto, salta (parábola) até o cume; os rótulos
+  // estouram como pipoca; o boneco vira de frente e faz ∞ com as mãos; uma âncora corre até o eixo y e
+  // nasce "y_máx". Enquanto isso, um ponto agarra o mínimo (etiqueta "Mín.") e uma gaivota desce por uma
+  // catenária até o fim do gráfico e passa a rodeá-lo.
+  // =====================================================================================
+  const cv = document.getElementById('ab-grafico'), ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+  const LIM = 6, U = W / (2 * LIM);
+  const X = x => (x + LIM) * U, Y = y => H - (y + LIM) * U;
+  const f = x => 1.7 * Math.sin(0.9 * x) + 0.35 * x;
+  const X0 = -5.5, X1 = 5.5;
+  const ROXO = '#473366', TINTA = '#241436', SEG = '#E07415', LARANJA = '#FF6633', VERMELHO = '#E8321E';
+
+  // máximo e mínimo da curva (por amostragem)
+  let XMAX = 0, XMIN = 0;
+  for (let i = 0; i <= 4000; i++) {
+    const x = X0 + (X1 - X0) * i / 4000;
+    if (f(x) > f(XMAX)) XMAX = x;
+    if (f(x) < f(XMIN)) XMIN = x;
+  }
+  const YMAX = f(XMAX), YMIN = f(XMIN), XFIM = X1, YFIM = f(X1);
+
+  // linha do tempo (ms)
+  const T = {
+    eixos: [0, 600], curva: [300, 1300], mono: [1200, 3600], minSobe: [1300, 2300], etiqueta: [2300, 3100],
+    titulo: 2600, escada: [3600, 4000], roda: [3600, 6000], sobe: [4000, 5600], salto: [5600, 6400],
+    pipoca: [6400, 7100], vira: [6700, 7100], infinito: [7200, 8300], ancora: [7200, 7500], ymax: 7450,
+    passaro: [1500, 7000], lema: 8300, mapa: 8800, toque: 10400,
+    // final: o boneco escorrega pelo gráfico e pula para fora; o resto sai de cena, cada um de um jeito
+    desliza: [8400, 9500], foge: [9500, 10200], degraus: 8400, trilhos: [8800, 9300], rastroSobe: [8500, 9000],
+    rastroSalto: [8400, 8900], marcaX: [8600, 9200], ancoraVolta: [8400, 8700], rodaSome: [9350, 9700],
+    grade: [8600, 9400], ymaxSome: [8500, 8900], eixosBrancos: [8800, 9400], passaroSai: [9200, 9900], maxPonto: [8700, 9000], maxEtiqueta: [9000, 9700]
+  };
+  const FIM = T.toque;
+  const lim = v => Math.max(0, Math.min(1, v));
+  const prog = (t, [a, b]) => lim((t - a) / (b - a));
+  const suave = u => u * u * (3 - 2 * u);                       // começa e termina devagar
+  const saida = u => 1 - Math.pow(1 - u, 3);
+  const volta = u => 1 + 2.2 * Math.pow(u - 1, 3) + 1.2 * Math.pow(u - 1, 2);   // passa um pouco e volta (encaixe)
+  const lerp = (a, b, u) => a + (b - a) * u;
+
+  // ---------- catenária da gaivota: do 2º quadrante até o ponto final do gráfico ----------
+  const P0 = { x: -5.2, y: 5.4 };
+  // y(x) = YFIM + a·(cosh((x − XFIM)/a) − 1), com a tal que a curva passa por P0
+  let aCat = 1, lo = 0.5, hi = 60;
+  for (let k = 0; k < 80; k++) { const m = (lo + hi) / 2; (YFIM + m * (Math.cosh((P0.x - XFIM) / m) - 1) > P0.y) ? (lo = m) : (hi = m); }
+  aCat = (lo + hi) / 2;
+  const cat = x => YFIM + aCat * (Math.cosh((x - XFIM) / aCat) - 1);
+  // pigmentos roxos ao longo do rastro (posições fixas, para não "piscar")
+  const pigmentos = Array.from({ length: 46 }, (_, i) => {
+    const r = Math.sin(i * 12.9898) * 43758.5453, h = r - Math.floor(r), r2 = Math.sin(i * 78.233) * 12345.678, h2 = r2 - Math.floor(r2);
+    return { s: h, d: (h2 - 0.5) * 16, raio: 1.6 + 2.2 * ((i * 7) % 5) / 5 };
+  });
+  const rastroVoo = [];
+
+  // ---------- desenho ----------
+  function linha(pontos, cor, larg) {
+    ctx.strokeStyle = cor; ctx.lineWidth = larg; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); pontos.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke();
+  }
+  function bola(x, y, r, cor) { ctx.fillStyle = cor; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+  function cabeca(x, y, frente) {
+    ctx.fillStyle = '#FFFDF5'; ctx.strokeStyle = TINTA; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (frente) {   // de frente: olhos e sorriso
+      bola(x - 3.5, y - 2, 1.6, TINTA); bola(x + 3.5, y - 2, 1.6, TINTA);
+      ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y + 1, 4.5, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
+    } else bola(x + 4, y - 2, 1.6, TINTA);
+  }
+
+  // o boneco de palito em cada momento
+  function boneco(t, rodaX, rodaAng) {
+    const R = 15;
+    if (t >= T.desliza[0]) { bonecoEscorrega(t); return; }
+    if (t < T.escada[0]) {
+      // no monociclo: sentado, pés nos pedais, braços abertos para se equilibrar
+      const cx = rodaX, cy = Y(0) - R - 2, assento = cy - R - 22, ombro = assento - 24;
+      linha([[cx, cy], [cx, assento]], TINTA, 3); linha([[cx - 9, assento], [cx + 9, assento]], TINTA, 4);
+      const ped = s => [cx + 8 * Math.cos(rodaAng + s), cy + 8 * Math.sin(rodaAng + s)];
+      [0, Math.PI].forEach(s => { const p = ped(s); linha([[cx, assento], [cx + 9, (assento + p[1]) / 2 - 2], p], TINTA, 4); });
+      const bal = Math.sin(t / 160) * 4;
+      linha([[cx, assento], [cx + 3, ombro]], TINTA, 4);
+      linha([[cx + 3, ombro + 4], [cx + 22, ombro + 2 + bal]], TINTA, 4);
+      linha([[cx + 3, ombro + 4], [cx - 18, ombro + 6 - bal]], TINTA, 4);
+      cabeca(cx + 5, ombro - 13, false);
+      return;
+    }
+    const xe = X(0);
+    if (t < T.salto[0]) {
+      // da roda para a escada e a subida pelo eixo y
+      const u = prog(t, T.escada), s = suave(prog(t, T.sobe));
+      const pes = lerp(lerp(Y(0) - 2 * R - 24, Y(0), suave(u)), Y(YMAX), s);
+      const x = lerp(lerp(X(-0.45), xe, suave(u)), xe, s);
+      const fase = s * Math.PI * 10;
+      const quadril = [x, pes - 26], pescoco = [x, pes - 54];
+      linha([quadril, [x - 8, pes - 4 - 6 * Math.max(0, Math.sin(fase))]], TINTA, 4);
+      linha([quadril, [x + 8, pes - 4 - 6 * Math.max(0, -Math.sin(fase))]], TINTA, 4);
+      linha([quadril, pescoco], TINTA, 4);
+      linha([[x, pes - 50], [x - 11, pes - 70 - 5 * Math.sin(fase)]], TINTA, 4);
+      linha([[x, pes - 50], [x + 11, pes - 70 + 5 * Math.sin(fase)]], TINTA, 4);
+      cabeca(x, pes - 65, false);
+      return;
+    }
+    if (t < T.pipoca[0]) {
+      // o salto: braços para cima, pernas encolhidas
+      const u = prog(t, T.salto), [x, y] = pontoSalto(u), pes = Y(y);
+      const px = X(x);
+      linha([[px, pes - 24], [px - 9, pes - 6], [px - 3, pes]], TINTA, 4);
+      linha([[px, pes - 24], [px + 9, pes - 8], [px + 5, pes - 1]], TINTA, 4);
+      linha([[px, pes - 24], [px + 3, pes - 52]], TINTA, 4);
+      linha([[px + 3, pes - 48], [px - 14, pes - 72]], TINTA, 4);
+      linha([[px + 3, pes - 48], [px + 20, pes - 70]], TINTA, 4);
+      cabeca(px + 4, pes - 63, false);
+      return;
+    }
+    // no cume: em pé, vira de frente e faz ∞ com as mãos
+    const px = X(XMAX), pes = Y(YMAX) - 3;
+    const v = prog(t, T.vira), frente = v >= 0.5;
+    const esc = v < 0.5 ? 1 - 2 * v : 2 * v - 1;
+    ctx.save(); ctx.translate(px, 0); ctx.scale(Math.max(0.05, esc), 1); ctx.translate(-px, 0);
+    linha([[px, pes - 26], [px - 7, pes]], TINTA, 4);
+    linha([[px, pes - 26], [px + 7, pes]], TINTA, 4);
+    linha([[px, pes - 26], [px, pes - 54]], TINTA, 4);
+    if (!frente) {
+      linha([[px, pes - 50], [px - 10, pes - 30]], TINTA, 4); linha([[px, pes - 50], [px + 10, pes - 30]], TINTA, 4);
+      cabeca(px + 1, pes - 65, false);
+    } else {
+      const k = prog(t, T.infinito), cxI = px, cyI = pes - 40, a = 22;
+      const lem = s => [cxI + a * Math.cos(s) / (1 + Math.sin(s) ** 2), cyI + a * Math.sin(s) * Math.cos(s) / (1 + Math.sin(s) ** 2)];
+      // o ∞ traçado pelas mãos
+      if (k > 0) {
+        const pts = []; for (let i = 0; i <= 80 * k; i++) pts.push(lem(Math.PI / 2 + i / 80 * Math.PI * 2));
+        linha(pts, LARANJA, 4);
+      }
+      const ponta = lem(Math.PI / 2 + k * Math.PI * 2);
+      const mao1 = k > 0 && k < 1 ? ponta : [cxI + a * 0.62, cyI], mao2 = k > 0 && k < 1 ? [2 * cxI - ponta[0], ponta[1]] : [cxI - a * 0.62, cyI];
+      linha([[px + 6, pes - 49], [px + 14, pes - 38], mao1], TINTA, 4);
+      linha([[px - 6, pes - 49], [px - 14, pes - 38], mao2], TINTA, 4);
+      cabeca(px, pes - 65, true);
+    }
+    ctx.restore();
+  }
+  // o boneco escorrega pelo gráfico, acelerando; no fim, a curva sobe um pouco e vira rampa: ele pula para fora
+  const df = x => (f(x + 1e-4) - f(x - 1e-4)) / 2e-4;
+  function bonecoEscorrega(t) {
+    let px, py, ang, voando = false;
+    if (t < T.foge[0]) {
+      const u = prog(t, T.desliza), x = lerp(XMAX, XFIM, u * u);
+      px = X(x); py = Y(f(x)); ang = -Math.atan(df(x));
+    } else {
+      const u = prog(t, T.foge);
+      if (u >= 1) return;
+      const x = XFIM + 2.6 * u, y = YFIM + 3.2 * u - 2.2 * u * u;
+      px = X(x); py = Y(y); ang = -Math.atan(df(XFIM)) - u * Math.PI * 1.8; voando = true;
+    }
+    ctx.save(); ctx.translate(px, py - 3); ctx.rotate(ang);
+    // agachado, como num esqui: pernas dobradas e braços abertos (no voo, braços para cima)
+    linha([[-4, -18], [-12, -9], [-10, 0]], TINTA, 4);
+    linha([[-4, -18], [6, -10], [8, 0]], TINTA, 4);
+    linha([[-4, -18], [2, -42]], TINTA, 4);
+    if (voando) { linha([[1, -38], [-14, -60]], TINTA, 4); linha([[1, -38], [18, -58]], TINTA, 4); }
+    else { linha([[1, -38], [-22, -34]], TINTA, 4); linha([[1, -38], [24, -42]], TINTA, 4); }
+    cabeca(4, -52, false);
+    ctx.restore();
+  }
+
+  // etiqueta pendurada numa cordinha, que desce e balança até parar
+  function etiqueta(t, faixa, ox, oy0, texto) {
+    const ed = prog(t, faixa);
+    if (ed <= 0) return;
+    const corda = 30 * saida(ed), te = (t - faixa[0]) / 1000;
+    const ang = 0.45 * Math.exp(-1.6 * te) * Math.sin(7 * te);
+    const oy = oy0 + 8, ex = ox + Math.sin(ang) * corda, ey = oy + Math.cos(ang) * corda;
+    linha([[ox, oy], [ex, ey]], TINTA, 2);
+    ctx.save(); ctx.translate(ex, ey); ctx.rotate(-ang);
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = VERMELHO; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(-27, 0, 54, 26, 6) : ctx.rect(-27, 0, 54, 26); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = VERMELHO; ctx.font = '700 17px system-ui'; ctx.textAlign = 'center'; ctx.fillText(texto, 0, 19);
+    ctx.restore();
+  }
+
+  // trajetória do salto: do eixo y, na altura do máximo, até o cume (parábola)
+  const pontoSalto = u => [lerp(0.25, XMAX, u), YMAX + 4 * 1.25 * u * (1 - u)];
+
+  function quadro(t) {
+    ctx.clearRect(0, 0, W, H);
+    // grade e eixos (crescem a partir da origem)
+    const a = saida(prog(t, T.eixos));
+    // grade: durante a saída dos elementos, treme de leve e afina; no fim, fica bem fininha
+    const ug = prog(t, T.grade), treme = Math.sin(Math.PI * ug) * 2.2;
+    ctx.globalAlpha = a; ctx.strokeStyle = `rgba(75, 0, 130, ${lerp(0.16, 0.24, ug)})`; ctx.lineWidth = lerp(2, 0.8, suave(ug));
+    for (let v = -LIM; v <= LIM; v++) {
+      const dx = treme * Math.sin(t / 37 + v * 1.7), dy = treme * Math.sin(t / 41 + v * 2.3);
+      ctx.beginPath(); ctx.moveTo(X(v) + dx, 0); ctx.lineTo(X(v) - dx, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, Y(v) + dy); ctx.lineTo(W, Y(v) - dy); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    const br = suave(prog(t, T.eixosBrancos)), canal = c => Math.round(lerp(c, 255, br));
+    ctx.strokeStyle = `rgb(${canal(43)}, ${canal(33)}, ${canal(64)})`; ctx.lineWidth = br > 0 ? 5 : 4; ctx.beginPath();
+    ctx.moveTo(X(0) - a * W / 2, Y(0)); ctx.lineTo(X(0) + a * W / 2, Y(0));
+    ctx.moveTo(X(0), Y(0) - a * H / 2); ctx.lineTo(X(0), Y(0) + a * H / 2); ctx.stroke();
+
+    // a roda: rola sobre o eixo x até o fim do gráfico, deixando a marca laranja
+    const um = suave(prog(t, T.mono)), ur = suave(prog(t, T.roda));
+    const rodaX = X(t < T.roda[0] ? lerp(X0, -0.45, um) : lerp(-0.45, X1, ur)), R = 15;
+    const rodaAng = (rodaX - X(X0)) / R;
+    const varre = saida(prog(t, T.marcaX));
+    if (t >= T.mono[0] && varre < 1) linha([[lerp(X(X0), rodaX, varre), Y(0)], [rodaX, Y(0)]], SEG, 10);
+
+    // rastro avermelhado da subida pelo eixo y
+    const s = suave(prog(t, T.sobe));
+    const recolhe = 1 - saida(prog(t, T.rastroSobe));
+    if (s > 0 && recolhe > 0) { ctx.globalAlpha = 0.85; linha([[X(0), Y(0)], [X(0), Y(YMAX * s * recolhe)]], VERMELHO, 9); ctx.globalAlpha = 1; }
+
+    // a curva (traçada da esquerda para a direita) e o ponto final do gráfico
+    const pc = saida(prog(t, T.curva));
+    if (pc > 0) {
+      const pts = []; for (let i = 0; i <= 240 * pc; i++) { const x = X0 + (X1 - X0) * i / 240; pts.push([X(x), Y(f(x))]); }
+      linha(pts, ROXO, 6);
+      if (pc >= 1) { bola(X(XFIM), Y(YFIM), 9, '#fff'); bola(X(XFIM), Y(YFIM), 7, ROXO); }
+    }
+
+    // o ponto que sobe por baixo e agarra o mínimo; a etiqueta "Mín." desce pendurada numa cordinha
+    const ms = prog(t, T.minSobe);
+    if (ms > 0) {
+      const y = lerp(YMIN - 2.6, YMIN, volta(ms));
+      bola(X(XMIN), Y(y), 11, 'rgba(232, 50, 30, .25)'); bola(X(XMIN), Y(y), 8, VERMELHO);
+      etiqueta(t, T.etiqueta, X(XMIN), Y(YMIN), 'Mín.');
+    }
+    // o ponto de máximo aparece quando o boneco começa a escorregar, com etiqueta igual à do mínimo
+    const mp = prog(t, T.maxPonto);
+    if (mp > 0) {
+      const e = volta(mp);
+      bola(X(XMAX), Y(YMAX), 11 * e, 'rgba(232, 50, 30, .25)'); bola(X(XMAX), Y(YMAX), 8 * e, VERMELHO);
+      etiqueta(t, T.maxEtiqueta, X(XMAX), Y(YMAX), 'Máx.');
+    }
+
+    // a escada (o monociclo virou escada) sobre o eixo y
+    const ue = suave(prog(t, T.escada));
+    if (ue > 0) {
+      const topo = Y(YMAX + 1.5), base = Y(0), alto = base - (base - topo) * ue;
+      const encolhe = 1 - suave(prog(t, T.trilhos)), altoTrilho = base - (base - alto) * encolhe;
+      ctx.globalAlpha = 0.9;
+      if (encolhe > 0) {
+        linha([[X(0) - 11, base], [X(0) - 11, altoTrilho]], '#6B5B7D', 3);
+        linha([[X(0) + 11, base], [X(0) + 11, altoTrilho]], '#6B5B7D', 3);
+      }
+      // degraus: do de cima para o de baixo, cada um cai girando
+      let i = 0;
+      for (let y = base - 14; y > alto; y -= 18, i++) {
+        const queda = (t - (T.degraus + (8 - i) * 45)) / 1000;
+        if (queda <= 0) { linha([[X(0) - 11, y], [X(0) + 11, y]], '#6B5B7D', 3); continue; }
+        if (queda > 0.7) continue;
+        ctx.save(); ctx.globalAlpha = 0.9 * (1 - queda / 0.7);
+        ctx.translate(X(0) + (i % 2 ? 1 : -1) * 60 * queda, y + 900 * queda * queda); ctx.rotate((i % 2 ? 1 : -1) * 7 * queda);
+        linha([[-11, 0], [11, 0]], '#6B5B7D', 3); ctx.restore();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // rastro parabólico do salto
+    const us = prog(t, T.salto);
+    if (us > 0) {
+      ctx.setLineDash([6, 8]); ctx.globalAlpha = 0.8;
+      const pavio = saida(prog(t, T.rastroSalto)), pts = [];
+      for (let i = Math.ceil(60 * pavio); i <= 60 * us; i++) { const [x, y] = pontoSalto(i / 60); pts.push([X(x), Y(y)]); }
+      if (pts.length > 1) linha(pts, VERMELHO, 4);
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+    }
+
+    // âncora dos pés até o eixo y e o nascimento de "y_máx"
+    const ua = saida(prog(t, T.ancora));
+    if (ua > 0) {
+      ctx.setLineDash([8, 7]);
+      const recua = saida(prog(t, T.ancoraVolta));
+      if (recua < 1) linha([[lerp(X(XMAX), X(0), recua), Y(YMAX)], [lerp(X(XMAX), X(0), ua), Y(YMAX)]], ROXO, 3);
+      ctx.setLineDash([]);
+      const somePonto = 1 - saida(prog(t, T.ymaxSome));
+      if (ua >= 1 && somePonto > 0) { bola(X(0), Y(YMAX), 9 * somePonto, '#fff'); bola(X(0), Y(YMAX), 7 * somePonto, ROXO); }
+    }
+    const uy = prog(t, [T.ymax, T.ymax + 450]), saiY = saida(prog(t, T.ymaxSome));
+    if (uy > 0 && saiY < 1) {
+      ctx.save(); ctx.globalAlpha = 1 - saiY;
+      ctx.translate(X(0) - 14 - 90 * saiY, Y(YMAX) + 9); ctx.scale(volta(uy) * (1 - 0.4 * saiY), volta(uy) * (1 - 0.4 * saiY));
+      ctx.fillStyle = ROXO; ctx.textAlign = 'right';
+      ctx.font = '700 17px system-ui'; ctx.fillText('máx', 0, 6);
+      const w = ctx.measureText('máx').width;
+      ctx.font = 'italic 700 30px Georgia, serif'; ctx.fillText('y', -w - 1, 0);
+      ctx.restore();
+    }
+
+    // rótulos "x" e "f(x)" que estouram como pipoca
+    const up = prog(t, T.pipoca);
+    if (up > 0) {
+      [[W - 10, Y(0) + 46, 'x', 'right'], [X(0) + 18, 34, 'f(x)', 'left']].forEach(([x, y, txt, al], j) => {
+        const e = volta(lim(up * 1.6 - j * 0.25));
+        // pipocas: grãos que saltam em volta e somem
+        const g = lim(up * 1.4 - j * 0.2);
+        if (g > 0 && g < 1) for (let i = 0; i < 8; i++) {
+          const ang = i / 8 * Math.PI * 2 + j, d = 10 + 34 * saida(g);
+          ctx.globalAlpha = 1 - g;
+          bola(x + (al === 'right' ? -10 : 18) + Math.cos(ang) * d, y - 10 + Math.sin(ang) * d - 10 * g, 4, i % 2 ? '#fff' : '#FFE27A');
+          ctx.globalAlpha = 1;
+        }
+        if (e > 0) {
+          ctx.save(); ctx.translate(x, y); ctx.scale(e, e);
+          ctx.font = 'italic 700 28px Georgia, serif'; ctx.textAlign = al; ctx.fillStyle = TINTA; ctx.fillText(txt, 0, 0);
+          ctx.restore();
+        }
+      });
+    }
+
+    // a roda (ponto roxo) e, sobre ela, o monociclo com o boneco
+    const some = 1 - saida(prog(t, T.rodaSome)), giro = rodaAng + 14 * prog(t, T.rodaSome);
+    if (some > 0) {
+      const Rr = R * some;
+      bola(rodaX, Y(0) - R - 2, Rr + 3, '#fff'); bola(rodaX, Y(0) - R - 2, Rr, ROXO);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      for (let i = 0; i < 3; i++) {
+        const g = giro + i * Math.PI / 3;
+        ctx.beginPath(); ctx.moveTo(rodaX - Math.cos(g) * (Rr - 3), Y(0) - R - 2 - Math.sin(g) * (Rr - 3));
+        ctx.lineTo(rodaX + Math.cos(g) * (Rr - 3), Y(0) - R - 2 + Math.sin(g) * (Rr - 3)); ctx.stroke();
+      }
+    }
+    if (t >= T.mono[0]) boneco(t, rodaX, rodaAng);
+
+    gaivota(t);
+  }
+
+  // a gaivota: desce pela catenária e depois rodeia o ponto final, como quem passeia
+  function gaivota(t) {
+    const uv = prog(t, T.passaro);
+    if (uv <= 0) return;
+    const xv = lerp(P0.x, XFIM, suave(uv));
+    // rastro esbranquiçado com pigmentos roxos (some aos poucos depois da chegada)
+    const apaga = 1 - lim((t - T.passaro[1]) / 2500);
+    if (apaga > 0) {
+      const pts = []; for (let i = 0; i <= 120; i++) { const x = lerp(P0.x, xv, i / 120); pts.push([X(x), Y(cat(x))]); }
+      ctx.globalAlpha = 0.55 * apaga; linha(pts, '#ffffff', 9);
+      pigmentos.forEach(p => {
+        const x = lerp(P0.x, XFIM, p.s);
+        if (x > xv) return;
+        ctx.globalAlpha = 0.45 * apaga; bola(X(x) + p.d * 0.3, Y(cat(x)) + p.d, p.raio, ROXO);
+      });
+      ctx.globalAlpha = 1;
+    }
+    let bx = X(xv), by = Y(cat(xv));
+    if (t > T.passaro[1]) {
+      const b = lim((t - T.passaro[1]) / 700), r = b * (30 + 9 * Math.sin(t / 700) + 6 * Math.sin(t / 310));
+      const th = t / 620 + 0.9 * Math.sin(t / 1100);
+      bx = X(XFIM) + r * Math.cos(th); by = Y(YFIM) - 6 + r * 0.7 * Math.sin(th);
+      const sai = (t - T.passaroSai[0]) / 1000;   // sai voando para o alto, à direita
+      if (sai > 0) { bx += 420 * sai * sai + 80 * sai; by -= 520 * sai * sai + 60 * sai; }
+      if (sai > 0.7) return;
+      rastroVoo.push([bx, by]); if (rastroVoo.length > 34) rastroVoo.shift();
+      ctx.globalAlpha = 0.4; linha(rastroVoo, '#ffffff', 6); ctx.globalAlpha = 1;
+    }
+    // duas linhas, batendo as asas
+    const bate = Math.sin(t / 85) * 6;
+    ctx.strokeStyle = TINTA; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(bx - 20, by - 6 - bate); ctx.quadraticCurveTo(bx - 9, by - 14 - bate * 0.4, bx, by);
+    ctx.quadraticCurveTo(bx + 9, by - 14 - bate * 0.4, bx + 20, by - 6 - bate);
+    ctx.stroke();
+  }
+
+  // ---------- título, lema, mapa e convite ----------
+  const titulo = document.getElementById('ab-titulo');
+  titulo.innerHTML = [...'Descubra com o Gráfico'].map((c, i) => `<span style="transition-delay:${i * 45}ms">${c}</span>`).join('');
+  const lema = document.getElementById('ab-lema'), jornada = document.getElementById('ab-jornada'), toque = document.getElementById('ab-toque');
+  const regioes = [...jornada.querySelectorAll('.ab-regiao')];
+  const pular = document.getElementById('ab-pular'), abertura = document.getElementById('ab-tela');
+  let t0 = 0, terminou = false, ativo = false;
+
+  function marcar(t) {
+    cv.classList.toggle('visivel', t >= 0);
+    titulo.classList.toggle('escrito', t >= T.titulo);
+    lema.classList.toggle('visivel', t >= T.lema);
+    jornada.classList.toggle('visivel', t >= T.mapa);
+    regioes.forEach((r, i) => r.classList.toggle('visivel', t >= T.mapa + 250 * i));
+    toque.classList.toggle('visivel', t >= T.toque);
+    terminou = t >= T.toque;
+    pular.hidden = terminou;
+  }
+  // a cena continua viva depois do fim: a gaivota segue rodeando o ponto
+  function laco(agora) {
+    if (!ativo) return;
+    const t = agora - t0;
+    quadro(t); marcar(t);
+    requestAnimationFrame(laco);
+  }
+  function iniciar() {
+    abertura.hidden = false;
+    rastroVoo.length = 0;
+    // só para revisão: ?t=5000 no endereço congela a cena em 5 s
+    const tFixo = Number(new URLSearchParams(location.search).get('t'));
+    if (tFixo) { ativo = false; cv.style.transition = 'none'; quadro(tFixo); marcar(tFixo); return; }
+    const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    t0 = performance.now() - (reduzido ? FIM + 3000 : 0);
+    if (reduzido) { ativo = false; quadro(FIM + 3000); marcar(FIM + 3000); return; }
+    marcar(-1);
+    if (!ativo) { ativo = true; requestAnimationFrame(laco); }
+  }
+  function irParaFim() { t0 = performance.now() - FIM; }
+
+  pular.onclick = e => { e.stopPropagation(); irParaFim(); };
+  abertura.onclick = () => {
+    if (!terminou) { irParaFim(); return; }   // um toque durante a animação pula; depois, começa
+    ativo = false;
+    // a abertura se apaga e mostra a tela de acesso
+    abertura.classList.add('saindo');
+    setTimeout(() => { abertura.hidden = true; }, 460);
+  };
+  iniciar();
+})();
+</script>
 <div class="deck">
   <div class="track" id="track">
 
@@ -1105,11 +1663,36 @@
       : `<p class="identificacao">${nome}</p>`;
     const mosaico = numero
       ? `<div class="mosaico" aria-hidden="true">
-          <h3>Quadro síntese</h3>
-          <p class="note">Toque num botão para ver a propriedade nos seis gráficos.</p>
-          <div class="mos-botoes"></div>
-          <div class="mos-grade">${FUNCS.map((_, i) => `<figure><canvas width="360" height="360" aria-label="Gráfico ${i + 1}"></canvas><figcaption>Gráfico ${i + 1}</figcaption></figure>`).join('')}</div>
-          <button class="mos-seguir">Próxima etapa ▶</button>
+          <section data-mos="comparar">
+            <h3>Quadro síntese</h3>
+            <p class="note">Toque num botão para ver a propriedade nos gráficos desta jornada.</p>
+            <div class="mos-botoes"></div>
+            <div class="mos-grade"></div>
+            <button type="button" class="mos-explicar">Explicar o que você viu ▶</button>
+          </section>
+          <section data-mos="explicar" hidden>
+            <h3>Explique com suas palavras</h3>
+            <p class="exp-pergunta"></p>
+            <p class="exp-premio" aria-label="Estrelas que você pode ganhar"><span><b>★</b> por responder</span><span><b>★</b> por usar palavras da matemática</span></p>
+            <button type="button" class="exp-inicio"></button>
+            <textarea class="exp-texto" maxlength="400" placeholder="Escreva aqui. Pode ser curto." aria-label="Sua explicação"></textarea>
+            <p class="exp-conta">0/400</p>
+            <button type="button" class="mos-enviar" disabled>Enviar resposta</button>
+            <p class="exp-privado">🔒 Só o seu professor lê esta resposta.</p>
+            <button type="button" class="exp-link" data-voltar-quadro>Voltar ao quadro</button>
+            <button type="button" class="exp-link" data-pular>Pular a explicação (sem estrelas)</button>
+          </section>
+          <section data-mos="enviada" hidden>
+            <h3>Sua explicação</h3>
+            <div class="exp-resposta"><div class="exp-quem"><span class="exp-avatar"></span><span><b class="exp-nome"></b> <small class="exp-quando">· agora</small></span></div><p class="exp-mostra"></p></div>
+            <div class="exp-estrelas">
+              <div class="exp-estrela" data-e="1"><span class="s">★</span><span>Você respondeu</span></div>
+              <div class="exp-estrela" data-e="2"><span class="s">★</span><span class="exp-e2"></span></div>
+            </div>
+            <p class="exp-privado">🔒 Só o seu professor lê esta resposta.</p>
+            <button type="button" class="exp-link" data-editar>Editar a resposta</button>
+            <button class="mos-seguir">Próxima etapa ▶</button>
+          </section>
         </div>`
       : '';
     container.innerHTML = `
@@ -1181,7 +1764,7 @@
   }
 
   function mostrarGrafico(st) {
-    st.graphName.textContent = `Gráfico ${st.gi + 1}`;
+    st.graphName.textContent = `Gráfico ${st.par ? st.par.indexOf(st.gi) + 1 : st.gi + 1}`;
     drawGraph(st);
   }
 
@@ -1213,6 +1796,8 @@
 
   // ---------- navegação entre telas ----------
   const track = document.getElementById('track');
+  // o foco num botão de outra tela não pode deslocar o quadro para o lado
+  track.parentElement.addEventListener('scroll', ev => { if (ev.target.scrollLeft) ev.target.scrollLeft = 0; });
   const b1Telas = [];   // telas das etapas do bloco 1 (usadas pela revisita)
   let current = 0;
   function go(i) {
@@ -1224,6 +1809,7 @@
     b1Telas.forEach(st => { if (st.revisita && current !== 2 + st.s) encerrarRevisita(st); });
     b1Telas.forEach(st => { if (current === 2 + st.s && !st.revisita && tourCompleto(st)) abrirSintese(st); });
     if (current === 1) iniciarDemonstracao();
+    if (current === B2_BASE + B2_ETAPAS.length) mostrarMissao(fimMissao, 3);
     if (current === B3_INI) b3Iniciar(); else b3Parar();
   }
   document.querySelectorAll('[data-next]').forEach(b => b.onclick = () => go(current + 1));
@@ -1399,6 +1985,52 @@
   pularBtn.onclick = () => { rodada++; go(2); };
   verDeNovoBtn.onclick = () => iniciarDemonstracao();
 
+  // ---------- sorteio dos gráficos do bloco 1 ----------
+  // Em cada etapa, 2 dos 6 gráficos. Regra: cada propriedade da etapa aparece em pelo menos um dos dois;
+  // quando possível, um tem a propriedade e o outro não (contraste).
+  function temPropriedade(fi, prop) {
+    const fn = FUNCS[fi], A = analyze(fn);
+    if (prop === 'dominio' || prop === 'imagem') return true;
+    if (INTERVALOS.includes(prop)) return A.intervals[prop].length > 0;
+    if (prop === 'maximo' || prop === 'minimo') return A.extrema.some(e => e.tipo === prop);
+    if (prop === 'raizes') return A.roots.length > 0;
+    return Number.isFinite(fn.f(0));
+  }
+  function sortearPar(s) {
+    const props = ETAPAS[s].botoes, pares = [];
+    for (let i = 0; i < FUNCS.length; i++) for (let j = i + 1; j < FUNCS.length; j++) pares.push([i, j]);
+    const validos = pares.filter(([i, j]) => props.every(pr => temPropriedade(i, pr) || temPropriedade(j, pr)));
+    const contraste = validos.filter(([i, j]) => props.some(pr => temPropriedade(i, pr) !== temPropriedade(j, pr)));
+    const lista = contraste.length ? contraste : validos;
+    const par = lista[Math.floor(Math.random() * lista.length)].slice();
+    return Math.random() < 0.5 ? par : par.reverse();
+  }
+  function sortearOcultos(par) {
+    const resto = FUNCS.map((_, i) => i).filter(i => !par.includes(i));
+    for (let i = resto.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [resto[i], resto[j]] = [resto[j], resto[i]]; }
+    return resto.slice(0, 2);
+  }
+
+  // Explicação ao fim de cada etapa: pergunta, começo de frase e palavras da matemática (lista ajustável)
+  const B1_EXPLICAR = [
+    { pergunta: 'Como você identifica o domínio de uma função olhando o gráfico?', inicio: 'Para encontrar o domínio, eu olho para',
+      exemplos: ['eixo x', 'intervalo'],
+      palavras: ['eixo x', 'abscissa', 'intervalo', 'projeç', 'projet', 'sombra', 'esquerda', 'direita', 'infinito', 'reais', 'começa', 'termina', 'extremidade', 'valores de x', 'coordenada x', 'coordenadas x'] },
+    { pergunta: 'Como você sabe, pelo gráfico, onde a função é positiva?', inicio: 'A função é positiva onde o gráfico',
+      exemplos: ['acima do eixo x', 'intervalo'],
+      palavras: ['acima', 'eixo x', 'positiv', 'maior que zero', 'maiores que zero', 'intervalo', 'raiz', 'raízes', 'zero', 'sinal', 'valores de y'] },
+    { pergunta: 'Como você reconhece um máximo ou um mínimo no gráfico?', inicio: 'Eu reconheço um máximo quando o gráfico',
+      exemplos: ['ponto mais alto', 'deixa de crescer'],
+      palavras: ['máximo', 'maximo', 'mínimo', 'minimo', 'mais alto', 'mais baixo', 'pico', 'vale', 'topo', 'muda', 'cresce', 'decresce', 'sobe', 'desce', 'vértice', 'vertice', 'local', 'absoluto'] },
+    { pergunta: 'Como você percebe que uma função é crescente num intervalo?', inicio: 'A função é crescente quando, da esquerda para a direita, o gráfico',
+      exemplos: ['sobe', 'valores de y aumentam'],
+      palavras: ['sobe', 'subindo', 'aumenta', 'cresce', 'crescente', 'esquerda para a direita', 'intervalo', 'valores de y', 'inclinação', 'eixo x'] },
+    { pergunta: 'Onde, no gráfico, ficam as raízes e o intercepto com o eixo y?', inicio: 'As raízes ficam onde o gráfico',
+      exemplos: ['corta o eixo x', 'eixo y'],
+      palavras: ['eixo x', 'eixo y', 'corta', 'encontra', 'toca', 'cruza', 'x = 0', 'x=0', 'y = 0', 'y=0', 'zero', 'raiz', 'raízes', 'intercepto', 'origem', 'abscissa', 'ordenada'] }
+  ];
+  const contaPalavras = t => String(t).trim().split(/\s+/).filter(Boolean).length;
+
   // ---------- etapas da atividade (uma tela por etapa) ----------
   // Percurso guiado em cada etapa: o estudante escolhe um dos dois botões; o outro fica indisponível até que
   // ele veja a animação nos seis gráficos. Então as setas e o primeiro botão travam, e o segundo pisca:
@@ -1409,6 +2041,8 @@
     track.appendChild(sec);
     const st = montarEtapa(sec, et.nome, s + 1);
     st.s = s; st.sec = sec;
+    // jornada: 2 dos 6 gráficos, sorteados com regra (ver sortearPar); os outros 2 do quadro ficam embaçados
+    st.par = sortearPar(s); st.ocultos = sortearOcultos(st.par); st.gi = st.par[0];
     b1Telas.push(st);
 
     // mapa do percurso: uma etapa concluída abre a revisita guiada
@@ -1457,7 +2091,7 @@
     T.atual = key; T.vistos = new Set();
     registrar('b1_escolha', { bloco: 1, etapa: st.s + 1, prop: key });
     st.active = new Set([key]);
-    if (T.ordem.length) { st.gi = 0; st.graphName.textContent = 'Gráfico 1'; }   // o segundo percurso começa no gráfico 1
+    if (T.ordem.length) { st.gi = st.par[0]; st.graphName.textContent = 'Gráfico 1'; }   // o segundo percurso começa no gráfico 1
     resetStage(st);
     pularEixo(st, key);
     atualizarTour(st);
@@ -1465,7 +2099,8 @@
 
   function trocarGrafico(st, passo) {
     if (st.revisita || st.graphNext.disabled) return;
-    st.gi = (st.gi + passo + FUNCS.length) % FUNCS.length;
+    // as setas alternam entre os 2 gráficos sorteados da etapa
+    st.gi = st.par[(st.par.indexOf(st.gi) + passo + st.par.length) % st.par.length];
     mostrarGrafico(st);
     atualizarTour(st);
   }
@@ -1477,7 +2112,7 @@
     if (T.atual && st.active.has(T.atual)) {
       T.vistos.add(st.gi);
       registrar('b1_animacao', { bloco: 1, etapa: st.s + 1, grafico: st.gi + 1, prop: T.atual });
-      if (T.vistos.size === FUNCS.length) {
+      if (T.vistos.size >= st.par.length) {
         T.ordem.push(T.atual);
         T.atual = null;
         if (tourCompleto(st)) { abrirSintese(st); concluirEtapa(1, st.s); }
@@ -1511,24 +2146,60 @@
             : 'Escolha um dos botões para começar.';
     st.hint.classList.toggle('pulsando', aguardaToque);
     // barra do percurso: aparece durante o percurso de cada botão e avança a cada gráfico percorrido
-    const n = T.atual ? T.vistos.size : esperando ? FUNCS.length : 0;
+    const n = T.atual ? T.vistos.size : esperando ? st.par.length : 0;
     st.progresso.hidden = !(T.atual || esperando);
-    st.progresso.firstElementChild.style.width = `${(n / FUNCS.length) * 100}%`;
+    st.progresso.firstElementChild.style.width = `${(n / st.par.length) * 100}%`;
     st.progresso.setAttribute('aria-valuenow', String(n));
   }
 
-  // Mosaico: os seis gráficos lado a lado, com a propriedade escolhida em todos ao mesmo tempo
-  function montarMosaico(st, et, s) {
-    const minis = [...st.mosaico.querySelectorAll('canvas')].map((cv, i) => ({
-      canvas: cv, gi: i, active: new Set(),
+  // Quadro síntese: os 2 gráficos sorteados (nítidos) e 2 de outra jornada (embaçados); os botões mostram a
+  // propriedade nos dois nítidos. Depois, a explicação com as próprias palavras, com estrelas.
+  function prepararGrade(st) {
+    const grade = st.mosaico.querySelector('.mos-grade');
+    const itens = [[st.par[0], 'Gráfico 1', false], [st.par[1], 'Gráfico 2', false], [st.ocultos[0], '?', true], [st.ocultos[1], '?', true]];
+    grade.innerHTML = itens.map(([, leg, oculto]) => `<figure class="${oculto ? 'oculto' : ''}"><canvas width="360" height="360" aria-label="${oculto ? 'Gráfico de outra jornada' : leg}"></canvas>${oculto ? '<span class="mos-outra">Outra jornada</span>' : `<figcaption>${leg}</figcaption>`}</figure>`).join('');
+    st.minis = [...grade.querySelectorAll('canvas')].map((cv, i) => ({
+      canvas: cv, gi: itens[i][0], active: new Set(),
       states: FUNCS.map(() => ({ done: new Set(), current: null, running: false, token: 0 }))
     }));
-    const desenhar = prop => minis.forEach(m => {
-      m.active = new Set(prop ? [prop] : []);
-      m.states[m.gi].done = new Set(prop ? [prop] : []);
-      drawGraph(m);
+    desenharMinis(st);
+  }
+  function desenharMinis(st) {
+    st.minis.forEach((mi, i) => {
+      const prop = i < 2 ? st.mosProp : null;   // os embaçados não mostram a propriedade
+      mi.active = new Set(prop ? [prop] : []);
+      mi.states[mi.gi].done = new Set(prop ? [prop] : []);
+      drawGraph(mi);
     });
-    const caixa = st.mosaico.querySelector('.mos-botoes');
+  }
+  function mostrarSecao(st, qual) {
+    st.mosaico.querySelectorAll('[data-mos]').forEach(sec => { sec.hidden = sec.dataset.mos !== qual; });
+    st.mosaico.scrollTop = 0;
+  }
+  // a resposta enviada: cartão com o nome do estudante e as estrelas ganhas
+  function mostrarResposta(st, animar) {
+    const m = st.mosaico, E = B1_EXPLICAR[st.s], ex = st.explicacao;
+    const nome = (sessao && sessao.nome) || 'Você';
+    m.querySelector('.exp-avatar').textContent = nome.split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase();
+    m.querySelector('.exp-nome').textContent = nome;
+    m.querySelector('.exp-mostra').textContent = ex.texto;
+    m.querySelector('.exp-quando').textContent = animar ? '· agora' : '· enviada';
+    m.querySelector('.exp-e2').textContent = ex.palavras.length
+      ? `Usou palavras da matemática: ${ex.palavras.slice(0, 3).join(', ')}`
+      : `Palavras da matemática: tente usar, por exemplo, "${E.exemplos[0]}" ou "${E.exemplos[1]}"`;
+    const e1 = m.querySelector('[data-e="1"]'), e2 = m.querySelector('[data-e="2"]');
+    [e1, e2].forEach(e => e.classList.remove('ganha'));
+    mostrarSecao(st, 'enviada');
+    if (animar) {
+      setTimeout(() => e1.classList.add('ganha'), 200);
+      if (ex.estrelas > 1) setTimeout(() => e2.classList.add('ganha'), 650);
+    } else { e1.classList.add('ganha'); if (ex.estrelas > 1) e2.classList.add('ganha'); }
+  }
+
+  function montarMosaico(st, et, s) {
+    const m = st.mosaico, E = B1_EXPLICAR[s];
+    st.mosProp = null;
+    const caixa = m.querySelector('.mos-botoes');
     et.botoes.forEach(key => {
       const b = document.createElement('button');
       b.textContent = LABELS[key]; b.setAttribute('aria-pressed', 'false');
@@ -1536,23 +2207,49 @@
         const liga = b.getAttribute('aria-pressed') !== 'true';
         caixa.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', 'false'));
         if (liga) b.setAttribute('aria-pressed', 'true');
-        desenhar(liga ? key : null);
+        st.mosProp = liga ? key : null;
+        desenharMinis(st);
         if (liga) registrar('b1_sintese', { bloco: 1, etapa: s + 1, prop: key });
       };
       caixa.appendChild(b);
     });
-    desenhar(null);
-    const seguir = st.mosaico.querySelector('.mos-seguir');
-    if (s === ETAPAS.length - 1) seguir.textContent = 'Seguir para o Bloco 2 ▶';
-    // o quadro desce para sair e, então, a etapa seguinte aparece
-    seguir.onclick = () => {
-      if (!st.mosaico.classList.contains('aberto')) return;
-      fecharSintese(st);
-      setTimeout(() => go(2 + s + 1), 560);
+    prepararGrade(st);
+
+    // explicação
+    m.querySelector('.exp-pergunta').textContent = E.pergunta;
+    const inicio = m.querySelector('.exp-inicio'), texto = m.querySelector('.exp-texto');
+    const enviar = m.querySelector('.mos-enviar'), conta = m.querySelector('.exp-conta');
+    inicio.textContent = `Começar com: "${E.inicio}…"`;
+    // o começo de frase sugerido não conta: são precisas pelo menos 3 palavras do estudante
+    const proprias = () => (texto.value.trim().startsWith(E.inicio) ? texto.value.trim().slice(E.inicio.length) : texto.value);
+    const atualiza = () => { conta.textContent = `${texto.value.length}/400`; enviar.disabled = contaPalavras(proprias()) < 3; };
+    inicio.onclick = () => { if (!texto.value.trim()) texto.value = E.inicio + ' '; texto.focus(); atualiza(); };
+    texto.addEventListener('input', atualiza);
+    m.querySelector('.mos-explicar').onclick = () => { mostrarSecao(st, 'explicar'); atualiza(); };
+    m.querySelector('[data-voltar-quadro]').onclick = () => mostrarSecao(st, 'comparar');
+    enviar.onclick = () => {
+      const t = texto.value.trim().replace(/\s+/g, ' '), baixo = proprias().toLowerCase();   // palavras da matemática: só as do estudante
+      const usadas = E.palavras.filter(pal => baixo.includes(pal));
+      st.explicacao = { texto: t, estrelas: usadas.length ? 2 : 1, palavras: usadas };
+      registrar('b1_explicacao', { bloco: 1, etapa: s + 1, texto: t, estrelas: st.explicacao.estrelas, palavras: usadas });
+      if (sessao) salvarLocal();
+      mostrarResposta(st, true);
     };
+    m.querySelector('[data-editar]').onclick = () => { texto.value = st.explicacao ? st.explicacao.texto : ''; atualiza(); mostrarSecao(st, 'explicar'); };
+    // o quadro desce para sair e, então, a etapa seguinte aparece
+    const seguirEtapa = () => {
+      if (!m.classList.contains('aberto')) return;
+      fecharSintese(st);
+      setTimeout(() => (s === ETAPAS.length - 1 ? abrirMissao(2) : go(2 + s + 1)), 560);
+    };
+    m.querySelector('[data-pular]').onclick = () => { registrar('b1_explicacao_pulada', { bloco: 1, etapa: s + 1 }); seguirEtapa(); };
+    const seguir = m.querySelector('.mos-seguir');
+    if (s === ETAPAS.length - 1) seguir.textContent = 'Seguir para o Bloco 2 ▶';
+    seguir.onclick = seguirEtapa;
   }
 
   function abrirSintese(st) {
+    if (st.explicacao) mostrarResposta(st, false); else mostrarSecao(st, 'comparar');
     // o quadro não cobre o título nem a instrução da etapa: a altura vai até logo abaixo deles
     const app = st.mosaico.offsetParent, topo = st.sec.querySelector('.stage-top');
     if (app && topo) st.mosaico.style.maxHeight = `${app.clientHeight - (topo.offsetTop + topo.offsetHeight) - 8}px`;
@@ -1697,8 +2394,8 @@
     box.querySelector('[data-outro]').onclick = () => {
       if (st.revisita !== rv) return;
       box.hidden = true;
-      st.gi = (st.gi + 1) % FUNCS.length;
-      st.graphName.textContent = `Gráfico ${st.gi + 1}`;
+      st.gi = st.par[(st.par.indexOf(st.gi) + 1) % st.par.length];
+      st.graphName.textContent = `Gráfico ${st.par.indexOf(st.gi) + 1}`;
       rv.i = 0;
       resetStage(st);
       rvPasso(st);
@@ -2407,21 +3104,10 @@
     });
   }, 600);
 
-  // Tela ao terminar o bloco 2
+  // Tela ao terminar o bloco 2: o quadro da missão (Região 3 em destaque; "Revisar" nas regiões 1 e 2)
   const fim = document.createElement('section');
   fim.className = 'slide';
-  fim.innerHTML = `
-    <div class="wrap center">
-      <h1>Bloco 2 concluído</h1>
-      <p class="lead">Escolha o que fazer agora.</p>
-      <div class="fim-botoes">
-        <button class="primary" data-fim="bloco1">Retornar para Bloco 1</button>
-        <button class="primary" data-fim="bloco2">Retornar para Bloco 2</button>
-        <button class="primary" data-fim="bloco3">Seguir para Bloco 3</button>
-        <button class="primary" data-fim="sair">Sair</button>
-      </div>
-      <p class="note" id="saida"></p>
-    </div>`;
+  fim.innerHTML = '<div class="missao-tela"></div>';
   track.appendChild(fim);
   // botões de uma tela de fim de bloco (usados também pela tela do bloco 3)
   function ligarFim(sec) {
@@ -2438,13 +3124,14 @@
     });
   }
   ligarFim(fim);
+  const fimMissao = fim.querySelector('.missao-tela');
 
   // ---------- Bloco 3: atalho de teste e tela de instrução com animação ----------
   const B3_INI = track.children.length;   // tela de instrução do bloco 3
 
   // VERSÃO: false = versão final para os estudantes; true = versão de estudo do professor, com atalhos
   // na tela inicial para ir direto aos blocos 2 e 3.
-  const MODO_PROFESSOR = false;
+  const MODO_PROFESSOR = true;
   if (MODO_PROFESSOR) {
     const cardInicial = track.children[0].querySelector('.card-sec');
     const atalhos = document.createElement('div');
@@ -3710,8 +4397,9 @@
       box.querySelector('[data-voltar]').onclick = () => { if (gi === 0) go(cfg.anterior()); else mostrar(gi - 1); };
       st.proximo.onclick = () => {
         if (!st.done) return;
+        if (cfg.fim && gi === cfg.graficos.length - 1) ganharSelo('explorador');
         if (gi < cfg.graficos.length - 1) mostrar(gi + 1);
-        else if (cfg.fim && sessao && sessao.modo !== 'anonimo') abrirSair(true);   // fim da atividade: a mesma janela do Sair, com a carinha final
+        else if (cfg.fim) revelarAposta(() => (sessao && sessao.modo !== 'anonimo' ? abrirSair(true) : go(cfg.seguinte())));   // fim da atividade: a mesma janela do Sair, com a carinha final
         else go(cfg.seguinte());
       };
     });
@@ -3875,12 +4563,261 @@
 
   // Evento para o professor: fica numa fila no aparelho e é enviado em lotes
   function registrar(tipo, dados = {}) {
-    if (!sessao || restaurando || sessao.modo === 'anonimo') return;
-    const { bloco = '', etapa = '', grafico = '', ...detalhe } = dados;
-    const fila = guardar.ler(chave() + ':fila', []);
-    fila.push({ quando: new Date().toISOString(), tipo, bloco, etapa, grafico, detalhe });
-    guardar.gravar(chave() + ':fila', fila);
+    if (!sessao || restaurando) return;
+    if (sessao.modo !== 'anonimo') {   // sem identificação, nada é registrado (os selos aparecem só na tela)
+      const { bloco = '', etapa = '', grafico = '', ...detalhe } = dados;
+      const fila = guardar.ler(chave() + ':fila', []);
+      fila.push({ quando: new Date().toISOString(), tipo, bloco, etapa, grafico, detalhe });
+      guardar.gravar(chave() + ':fila', fila);
+    }
+    if (tipo !== 'selo') observar(tipo, dados);
   }
+
+  // ----- selos (caderno de selos) -----
+  const SELOS = [
+    { id: 'apostador', nome: 'Apostador(a)', icone: '🎲', dica: 'Faça 3 apostas sem usar "Não sei" (a aposta da jornada e as do Bloco 2).' },
+    { id: 'persistente', nome: 'Persistente', icone: '🔁', dica: 'Erre e, depois, acerte no mesmo gráfico.' },
+    { id: 'revisitante', nome: 'Revisitante', icone: '🧭', dica: 'Faça uma revisita guiada no Bloco 1.' },
+    { id: 'observador', nome: 'Observador(a)', icone: '🔭', dica: 'No quadro síntese, compare os gráficos com um botão.' },
+    { id: 'apoio', nome: 'Busca apoio', icone: '🤝', dica: 'Use um apoio (Rever ou Ajuda) e, depois, acerte.' },
+    { id: 'tradutor', nome: 'Tradutor(a)', icone: '🔀', dica: 'No Bloco 3, leve a cruz até o valor pedido (caminho inverso).' },
+    { id: 'explicador', nome: 'Explicador(a)', icone: '✍️', dica: 'Explique com suas palavras as 5 etapas do Bloco 1.' },
+    { id: 'explorador', nome: 'Explorador(a) completo(a)', icone: '🏁', dica: 'Chegue ao FIM do Bloco 3.' }
+  ];
+  function observar(tipo, d) {
+    const M = marcasSelos, chaveG = `${d.bloco}|${d.etapa}|${d.grafico}`;
+    if ((tipo === 'b2_aposta' || tipo === 'aposta_inicial') && d.aposta !== 'Não sei' && ++M.apostas >= 3) ganharSelo('apostador');
+    if (tipo === 'b1_revisita') ganharSelo('revisitante');
+    if (tipo === 'b1_sintese') ganharSelo('observador');
+    if (tipo === 'b2_rever' || tipo === 'b3_ajuda') M.apoio = true;
+    if (tipo === 'b3_gesto' && d.certo) ganharSelo('tradutor');
+    if (tipo === 'b1_explicacao') {
+      if (!M.explicadas.includes(d.etapa)) M.explicadas.push(d.etapa);
+      if (M.explicadas.length >= ETAPAS.length) ganharSelo('explicador');
+    }
+    // erro e acerto no mesmo gráfico; acerto depois de um apoio
+    let certo = null;
+    if (tipo === 'b2_erro') certo = false;
+    else if (tipo === 'b2_acerto') certo = true;
+    else if (tipo === 'b3_checar' || tipo === 'b3_gesto') certo = !!d.certo;
+    else if (d.certoX !== undefined) certo = d.certoX !== false && d.certoY !== false && d.certoPontos !== false;
+    if (certo === false) M.errou[chaveG] = true;
+    if (certo === true) {
+      if (M.errou[chaveG]) ganharSelo('persistente');
+      if (M.apoio) ganharSelo('apoio');
+    }
+  }
+  const seloAviso = document.createElement('div');
+  seloAviso.className = 'selo-aviso'; seloAviso.setAttribute('role', 'status');
+  document.body.appendChild(seloAviso);
+  let seloAvisoTempo = null;
+  function ganharSelo(id) {
+    if (selos.has(id)) return;
+    const S = SELOS.find(x => x.id === id);
+    selos.add(id);
+    registrar('selo', { selo: id });
+    if (!restaurando) {
+      seloAviso.textContent = `${S.icone} Novo selo: ${S.nome}`;
+      seloAviso.classList.add('visivel');
+      clearTimeout(seloAvisoTempo);
+      seloAvisoTempo = setTimeout(() => seloAviso.classList.remove('visivel'), 2600);
+    }
+    atualizarCadernos();
+  }
+  function atualizarCadernos() {
+    document.querySelectorAll('button.b3-caderno').forEach(b => { b.textContent = `📒 ${selos.size}`; });
+  }
+  const cadernoModal = document.createElement('div');
+  cadernoModal.className = 'caderno-modal'; cadernoModal.hidden = true;
+  document.body.appendChild(cadernoModal);
+  function abrirCaderno() {
+    cadernoModal.innerHTML = `
+      <div class="card-sec center" role="dialog" aria-modal="true" aria-label="Caderno de selos">
+        <h2 style="justify-content:center">📒 Caderno de selos</h2>
+        <p class="note">${selos.size} de ${SELOS.length} selos nesta jornada. Os que faltam mostram como ganhar.</p>
+        <div class="selos-grade">${SELOS.map(S => `<div class="selo-item${selos.has(S.id) ? '' : ' falta'}"><div class="icone" aria-hidden="true">${S.icone}</div><b>${S.nome}</b>${selos.has(S.id) ? '<small>Conquistado!</small>' : `<small>${S.dica}</small>`}</div>`).join('')}</div>
+        <div class="actions" style="justify-content:center"><button type="button" class="primary" data-fechar>Voltar à atividade</button></div>
+      </div>`;
+    cadernoModal.querySelector('[data-fechar]').onclick = () => { cadernoModal.hidden = true; };
+    cadernoModal.hidden = false;
+  }
+  cadernoModal.addEventListener('click', ev => { if (ev.target === cadernoModal) cadernoModal.hidden = true; });
+
+  // ----- missão: antes do Bloco 1, na passagem 1 → 2 e na passagem 2 → 3 -----
+  // A região atual fica em roxo; as anteriores têm "Revisar" (volta ao bloco); as seguintes, cadeado.
+  const REGIOES = [
+    ['O Observatório', 'olhar e comparar'],
+    ['O Campo de Provas', 'apostar, agir e corrigir'],
+    ['A Ponte das Representações', 'passar de uma linguagem para outra']
+  ];
+  const INICIO_BLOCO = [0, 2, B2_BASE, B3_INI];
+  const missaoModal = document.createElement('div');
+  missaoModal.className = 'missao-modal'; missaoModal.hidden = true;
+  document.body.appendChild(missaoModal);
+
+  function mostrarMissao(caixa, atual, aoSeguir) {
+    const botao = atual === 1 ? 'Aceitar a missão ▶' : `Seguir para o Bloco ${atual} ▶`;
+    caixa.innerHTML = `
+      <div class="mi-cartao" role="dialog" aria-label="Sua missão">
+        <div class="mi-cab"><p class="t1">Descubra com o Gráfico</p><p class="t2">André Silva - IFRJ - 2026 - v.01</p></div>
+        <div class="mi-corpo">
+          <span class="mi-tag">Sua missão · Jornada ${jornada}</span>
+          <h2>Todo gráfico conta uma história.</h2>
+          <p>Atravesse as três regiões e descubra o que cada gráfico diz.</p>
+          <ol class="mi-regioes">${REGIOES.map(([nome, desc], i) => {
+            const r = i + 1, classe = r === atual ? 'aberta' : r < atual ? 'feita' : '';
+            return `<li class="${classe}"><span class="num">${r}</span><span><b>${nome}</b><span class="desc">${desc}</span></span>${
+              r < atual ? `<button type="button" class="mi-revisar" data-revisar="${r}" aria-label="Revisar a Região ${r}">Revisar</button>`
+                : r > atual ? '<span class="cadeado" aria-label="fechada">🔒</span>' : ''}</li>`;
+          }).join('')}</ol>
+          <p class="mi-sorteio">🎲 Os gráficos da Região 1 foram sorteados para você. Cada jornada é diferente.</p>
+          <button type="button" class="mi-aceitar">${botao}</button>
+        </div>
+      </div>`;
+    caixa.querySelectorAll('[data-revisar]').forEach(b => {
+      b.onclick = () => {
+        const r = Number(b.dataset.revisar);
+        registrar('missao_revisar', { bloco: r });
+        missaoModal.hidden = true;
+        go(INICIO_BLOCO[r]);
+      };
+    });
+    caixa.querySelector('.mi-aceitar').onclick = aoSeguir || (() => go(INICIO_BLOCO[atual]));
+  }
+
+  // passagem: 2 = do Bloco 1 para o 2. Sem ela, é a missão depois do acesso: a região atual é onde o estudante
+  // começa (ou retoma) e "Aceitar a missão" leva a "Como usar".
+  function abrirMissao(passagem) {
+    const atual = passagem || (destinoInicio >= B3_INI ? 3 : destinoInicio >= B2_BASE ? 2 : 1);
+    mostrarMissao(missaoModal, atual, () => {
+      if (passagem === 2 && !apostaInicial) { abrirAposta(); return; }   // a aposta da jornada fica entre o Bloco 1 e o Bloco 2
+      missaoModal.hidden = true;
+      go(passagem ? INICIO_BLOCO[atual] : 1);
+    });
+    if (!passagem && atual > 1) missaoModal.querySelector('.mi-aceitar').textContent = 'Aceitar a missão ▶';
+    missaoModal.hidden = false;
+    missaoModal.scrollTop = 0;
+  }
+
+  // ----- aposta da jornada: o gráfico misterioso f(x) = −2x + 3, com a cortina sobre x > 0 -----
+  let apostaInicial = null;   // { aposta, certa, final?, certaFinal? }
+  const AP_CERTA = 'Entre 0 e 2', AP_OPCOES = ['Entre 0 e 2', 'Entre 2 e 4', 'Não encontra', 'Não sei'];
+  // abre: 0 = cortina fechada (só x ≤ 0 aparece); 1 = cortina aberta
+  function desenharMisterio(cv, abre) {
+    const ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+    const X = x => (x + 3) / 6 * W, Y = y => H - (y + 2) / 10 * H, f = x => -2 * x + 3;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = css('--fundo-grafico'); ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = css('--grade'); ctx.lineWidth = 1;
+    for (let x = -3; x <= 3; x++) { ctx.beginPath(); ctx.moveTo(X(x), 0); ctx.lineTo(X(x), H); ctx.stroke(); }
+    for (let y = -2; y <= 8; y++) { ctx.beginPath(); ctx.moveTo(0, Y(y)); ctx.lineTo(W, Y(y)); ctx.stroke(); }
+    ctx.strokeStyle = css('--eixo'); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, Y(0)); ctx.lineTo(W, Y(0)); ctx.moveTo(X(0), 0); ctx.lineTo(X(0), H); ctx.stroke();
+    ctx.fillStyle = css('--eixo'); ctx.font = 'italic 700 15px serif';
+    ctx.fillText('f(x)', X(0) - 34, 16);
+    ctx.font = '12px system-ui, sans-serif';
+    [-2, -1, 1, 2].forEach(v => ctx.fillText(String(v).replace('-', '−'), X(v) - 5, Y(0) + 15));
+    [2, 4, 6].forEach(v => ctx.fillText(String(v), X(0) - 14, Y(v) + 4));
+    // o gráfico: a parte visível e, com a cortina aberta, o resto
+    const xFim = abre * 3;
+    ctx.strokeStyle = css('--roxo'); ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(X(-2.5), Y(f(-2.5))); ctx.lineTo(X(Math.max(0, xFim)), Y(f(Math.max(0, xFim)))); ctx.stroke();
+    if (xFim >= 1.5) {
+      ctx.fillStyle = css('--laranja'); ctx.beginPath(); ctx.arc(X(1.5), Y(0), 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = css('--eixo'); ctx.font = '700 14px system-ui, sans-serif'; ctx.fillText('x = 1,5', X(1.5) + 8, Y(0) - 10);
+    }
+    // a cortina: listras roxas sobre x > 0, que correm para a direita ao abrir
+    const c0 = X(0) + (W - X(0)) * abre;
+    if (c0 < W) {
+      ctx.fillStyle = css('--roxo'); ctx.fillRect(c0, 0, W - c0, H);
+      ctx.strokeStyle = 'rgba(255, 255, 255, .14)'; ctx.lineWidth = 6;
+      for (let x = c0 + 10; x < W; x += 18) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      if (abre === 0) { ctx.fillStyle = '#fff'; ctx.font = '700 30px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('?', (c0 + W) / 2, H / 2); ctx.textAlign = 'start'; }
+    }
+    ctx.fillStyle = c0 < W - 20 ? '#fff' : css('--eixo'); ctx.font = 'italic 700 15px serif';
+    ctx.fillText('x', W - 14, Y(0) + 18);
+  }
+  function cartaoAposta(tag, titulo, texto, botao) {
+    missaoModal.innerHTML = `
+      <div class="mi-cartao" role="dialog" aria-label="${titulo}">
+        <div class="mi-cab"><p class="t1">Descubra com o Gráfico</p><p class="t2">André Silva - IFRJ - 2026 - v.01</p></div>
+        <div class="mi-corpo">
+          <span class="mi-tag">${tag}</span>
+          <h2>${titulo}</h2>
+          <p>${texto}</p>
+          <canvas class="ap-grafico" width="300" height="400" aria-label="Gráfico misterioso: uma reta que desce da esquerda para a direita; a parte com x maior que 0 está coberta por uma cortina"></canvas>
+          <p><b>Depois da cortina, onde o gráfico encontra o eixo x?</b></p>
+          <div class="ap-opcoes">${AP_OPCOES.map(o => `<button type="button" aria-pressed="false" data-ap="${o}">${o}</button>`).join('')}</div>
+          <p class="ap-guardada" hidden></p>
+          <button type="button" class="mi-aceitar" disabled>${botao}</button>
+        </div>
+      </div>`;
+    const cv = missaoModal.querySelector('canvas');
+    desenharMisterio(cv, 0);
+    missaoModal.scrollTop = 0;
+    return { cv, ops: [...missaoModal.querySelectorAll('[data-ap]')], msg: missaoModal.querySelector('.ap-guardada'), seguir: missaoModal.querySelector('.mi-aceitar') };
+  }
+  function escolher(ops, valor) { ops.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ap === valor))); }
+
+  function abrirAposta() {
+    const A = cartaoAposta('Aposta da jornada', 'O gráfico misterioso',
+      'Antes de entrar no Campo de Provas, faça a sua aposta. Ela fica guardada até o fim da jornada.', 'Seguir para o Bloco 2 ▶');
+    let valor = null;
+    A.ops.forEach(b => {
+      b.onclick = () => {
+        valor = b.dataset.ap; escolher(A.ops, valor);
+        A.msg.hidden = false;
+        A.msg.textContent = valor === 'Não sei' ? 'Tudo bem! No fim da jornada, a cortina se abre e você vê.'
+          : 'Aposta guardada! No fim da jornada, a cortina se abre.';
+        A.seguir.disabled = false;
+      };
+    });
+    A.seguir.onclick = () => {
+      if (!valor) return;
+      apostaInicial = { aposta: valor, certa: valor === AP_CERTA };
+      registrar('aposta_inicial', { aposta: valor, certa: valor === AP_CERTA });
+      if (sessao) salvarLocal();
+      missaoModal.hidden = true;
+      go(B2_BASE);
+    };
+    missaoModal.hidden = false;
+  }
+
+  // No FIM: a aposta volta ("Você mudaria sua aposta?"), a cortina se abre e, então, o fim da atividade
+  function revelarAposta(depois) {
+    if (!apostaInicial) { depois(); return; }
+    const A = cartaoAposta('Fim da jornada', 'Lembra da sua aposta?',
+      `Antes do Bloco 2, você apostou: <b>${apostaInicial.aposta}</b>. Depois de tudo o que você viu, você mudaria sua aposta?`, 'Abrir a cortina ▶');
+    let valor = apostaInicial.aposta, aberta = false;
+    escolher(A.ops, valor);
+    A.seguir.disabled = false;
+    A.ops.forEach(b => { b.onclick = () => { if (aberta) return; valor = b.dataset.ap; escolher(A.ops, valor); }; });
+    A.seguir.onclick = () => {
+      if (!aberta) {
+        aberta = true;
+        apostaInicial.final = valor; apostaInicial.certaFinal = valor === AP_CERTA;
+        registrar('aposta_final', { aposta: valor, certa: valor === AP_CERTA, mudou: valor !== apostaInicial.aposta, inicial: apostaInicial.aposta });
+        A.ops.forEach(b => { b.disabled = b.dataset.ap !== valor && b.dataset.ap !== AP_CERTA; b.classList.toggle('certa', b.dataset.ap === AP_CERTA); });
+        const t0 = performance.now();
+        const passo = agora => {
+          const k = Math.min(1, (agora - t0) / 1400);
+          desenharMisterio(A.cv, 1 - Math.pow(1 - k, 3));
+          if (k < 1) requestAnimationFrame(passo);
+        };
+        requestAnimationFrame(passo);
+        A.msg.hidden = false;
+        A.msg.innerHTML = `O gráfico é o de f(x) = −2x + 3. Ele encontra o eixo x em x = 1,5, porque f(1,5) = 0: <b>entre 0 e 2</b>. ` +
+          (valor === AP_CERTA ? (apostaInicial.certa ? 'Você acertou desde o início!' : 'Você mudou a aposta e acertou!')
+            : 'Compare: onde a reta desce até y = 0?');
+        A.seguir.textContent = 'Concluir ▶';
+        return;
+      }
+      missaoModal.hidden = true;
+      depois();
+    };
+    missaoModal.hidden = false;
+  }
+
   let enviando = false;
   // envia a fila; devolve true quando ela fica vazia
   async function enviarFila() {
@@ -3904,12 +4841,18 @@
   }
   setInterval(enviarFila, 30000);
 
+  // selos ganhos, o que conta para eles e o número da jornada (a cada "Começar", uma jornada nova)
+  let selos = new Set(), jornada = 1;
+  let marcasSelos = { apostas: 0, errou: {}, apoio: false, explicadas: [] };
+
   // ----- o que é salvo para a retomada -----
   function capturarEstado() {
     return {
       versao: 1, atualizado: new Date().toISOString(), tela: current,
       prog: PROG,
-      b1: b1Telas.map(st => ({ gi: st.gi, ordem: st.tour.ordem, atual: st.tour.atual, vistos: [...st.tour.vistos] })),
+      b1: b1Telas.map(st => ({ gi: st.gi, ordem: st.tour.ordem, atual: st.tour.atual, vistos: [...st.tour.vistos],
+        par: st.par, ocultos: st.ocultos, explicacao: st.explicacao || null })),
+      jornada, selos: [...selos], marcas: marcasSelos, aposta: apostaInicial,
       b2: b2Telas.map((st, k) => ({ gi: st.gi, g: b2Estados[k].map(e => ({ done: !!e.done, aposta: e.aposta, erros: e.erros || 0 })) })),
       b3: eEst.map(e => ({ done: !!e.done })),
       b3e2: E2.est.map(e => ({ done: !!e.done })),
@@ -3950,9 +4893,13 @@
     (e.b1 || []).forEach((x, s) => {
       const st = b1Telas[s];
       if (!st) return;
-      st.tour = { ordem: x.ordem || [], atual: x.atual || null, vistos: new Set(x.vistos || []) };
+      // percurso salvo antes da v37 (sem par sorteado): fica o sorteio novo
+      if (Array.isArray(x.par) && x.par.length === 2) { st.par = x.par; st.ocultos = x.ocultos || sortearOcultos(x.par); }
+      st.explicacao = x.explicacao || null;
+      st.tour = { ordem: x.ordem || [], atual: x.atual || null, vistos: new Set((x.vistos || []).filter(v => st.par.includes(v))) };
       st.active = new Set(st.tour.atual ? [st.tour.atual] : []);
-      st.gi = x.gi || 0;
+      st.gi = st.par.includes(x.gi) ? x.gi : st.par[0];
+      prepararGrade(st);
       resetStage(st); mostrarGrafico(st); atualizarTour(st);
     });
     (e.b2 || []).forEach((x, k) => {
@@ -3971,6 +4918,11 @@
     (e.b3e2 || []).forEach((x, gi) => { if (x.done && E2.est[gi]) E2.concluir(gi); });
     (e.b3e3 || []).forEach((x, gi) => { if (x.done && E3.est[gi]) E3.concluir(gi); });
     (e.b3e4 || []).forEach((x, gi) => { if (x.done && E4.est[gi]) E4.concluir(gi); });
+    jornada = e.jornada || 1;
+    apostaInicial = e.aposta || null;
+    selos = new Set(e.selos || []);
+    marcasSelos = Object.assign({ apostas: 0, errou: {}, apoio: false, explicadas: [] }, e.marcas || {});
+    atualizarCadernos();
     restaurando = false;
   }
 
@@ -4035,7 +4987,7 @@
     sessao = { login: '', turma: '', nome: '', modo: 'anonimo' };
     estadoSalvo = null;
     destinoInicio = 2;
-    go(1);
+    abrirMissao();
   };
 
   const limparTurma = v => String(v).trim().toUpperCase().replace(/\s+/g, '').replace(/[–—−]/g, '-');
@@ -4120,15 +5072,25 @@
     registrar('sessao_inicio', { humor: mood, retomada: true });
     restaurarEstado(estadoSalvo);
     destinoInicio = estadoSalvo.tela;
-    go(1);
+    abrirMissao();
     enviarFila();
   };
   startBtn.onclick = () => {
     if (!mood) return;
     if (estadoSalvo && estadoSalvo.tela > 1 && !confirm('Começar de novo? O percurso salvo será substituído pelo novo.')) return;
-    registrar('sessao_inicio', { humor: mood, retomada: false });
+    // jornada nova: os selos e o que conta para eles continuam; o sorteio desta jornada vai para o professor
+    jornada = estadoSalvo ? (estadoSalvo.jornada || 1) + 1 : 1;
+    if (estadoSalvo) {
+      selos = new Set(estadoSalvo.selos || []);
+      marcasSelos = Object.assign({ apostas: 0, errou: {}, apoio: false, explicadas: [] }, estadoSalvo.marcas || {});
+      marcasSelos.explicadas = [];   // o selo Explicador(a) pede as 5 explicações numa mesma jornada
+      atualizarCadernos();
+    }
+    apostaInicial = null;
+    registrar('sessao_inicio', { humor: mood, retomada: false, jornada });
+    registrar('b1_sorteio', { pares: b1Telas.map(st => st.par.map(i => i + 1).join('-')).join(' ') });
     destinoInicio = 2;
-    go(1);
+    abrirMissao();
     enviarFila();
   };
   comecarBtn.onclick = () => { if (!comecarBtn.disabled) go(destinoInicio); };
@@ -4217,7 +5179,14 @@
     b.setAttribute('aria-label', 'Sair e salvar o percurso');
     b.onclick = () => sairDaAtividade();
     cab.appendChild(b);
+    const c = document.createElement('button');
+    c.type = 'button';
+    c.className = 'b3-caderno';
+    c.setAttribute('aria-label', 'Caderno de selos');
+    c.onclick = () => abrirCaderno();
+    cab.appendChild(c);
   });
+  atualizarCadernos();
 
 })();
 </script>
