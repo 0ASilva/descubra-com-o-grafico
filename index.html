@@ -183,6 +183,7 @@
   .mi-regioes .cadeado { margin-left: auto; font-size: 1.05rem; opacity: .7; }
   /* região já percorrida: "Revisar" laranja, pulsando, no canto superior direito */
   .mi-regioes li { position: relative; }
+  .mi-regioes li.feita { padding-right: 84px; }   /* espaço para o "Revisar" */
   .mi-regioes li.feita .num { background: var(--laranja); color: #fff; border: 0; }
   button.mi-revisar { position: absolute; top: 6px; right: 10px; min-height: 0; padding: 2px 4px; border: 0; background: none;
     color: var(--laranja); font-size: .8rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; animation: miPulsa 1.4s ease-in-out infinite; }
@@ -1810,6 +1811,7 @@
     b1Telas.forEach(st => { if (current === 2 + st.s && !st.revisita && tourCompleto(st)) abrirSintese(st); });
     if (current === 1) iniciarDemonstracao();
     if (current === B2_BASE + B2_ETAPAS.length) mostrarMissao(fimMissao, 3);
+    if (current === B3_FIM) mostrarMissao(b3Fim.firstElementChild, 4, () => sairDaAtividade());
     if (current === B3_INI) b3Iniciar(); else b3Parar();
   }
   document.querySelectorAll('[data-next]').forEach(b => b.onclick = () => go(current + 1));
@@ -3109,21 +3111,6 @@
   fim.className = 'slide';
   fim.innerHTML = '<div class="missao-tela"></div>';
   track.appendChild(fim);
-  // botões de uma tela de fim de bloco (usados também pela tela do bloco 3)
-  function ligarFim(sec) {
-    sec.querySelectorAll('[data-fim]').forEach(b => {
-      b.onclick = () => {
-        const saida = sec.querySelector('#saida');
-        const acao = b.dataset.fim;
-        if (acao === 'bloco1') go(2);
-        else if (acao === 'bloco2') go(B2_BASE);
-        else if (acao === 'bloco3') go(B3_INI);
-        else if (sessao && sessao.modo !== 'anonimo') abrirSair(false);
-        else { window.close(); saida.textContent = 'Feche esta aba do navegador para sair.'; }
-      };
-    });
-  }
-  ligarFim(fim);
   const fimMissao = fim.querySelector('.missao-tela');
 
   // ---------- Bloco 3: atalho de teste e tela de instrução com animação ----------
@@ -3131,7 +3118,7 @@
 
   // VERSÃO: false = versão final para os estudantes; true = versão de estudo do professor, com atalhos
   // na tela inicial para ir direto aos blocos 2 e 3.
-  const MODO_PROFESSOR = true;
+  const MODO_PROFESSOR = false;
   if (MODO_PROFESSOR) {
     const cardInicial = track.children[0].querySelector('.card-sec');
     const atalhos = document.createElement('div');
@@ -3198,23 +3185,11 @@
   const B3_E4 = track.children.length - 1;
   const B3_ETAPAS = ['Valor da função e Interceptos', 'Domínio e Imagem', 'Crescimento e Extremos', 'Sinais e Interceptos'];
 
-  // Tela ao terminar o bloco 3: o último gráfico da etapa leva para cá
+  // Tela ao terminar o bloco 3: o quadro da missão, com "Revisar" nas três regiões
   const b3Fim = document.createElement('section');
   b3Fim.className = 'slide';
-  b3Fim.innerHTML = `
-    <div class="wrap center">
-      <h1>Bloco 3 concluído</h1>
-      <p class="lead">Escolha o que fazer agora.</p>
-      <div class="fim-botoes">
-        <button class="primary" data-fim="bloco1">Retornar para Bloco 1</button>
-        <button class="primary" data-fim="bloco2">Retornar para Bloco 2</button>
-        <button class="primary" data-fim="bloco3">Retornar para Bloco 3</button>
-        <button class="primary" data-fim="sair">Sair</button>
-      </div>
-      <p class="note" id="saida"></p>
-    </div>`;
+  b3Fim.innerHTML = '<div class="missao-tela"></div>';
   track.appendChild(b3Fim);
-  ligarFim(b3Fim);
   const B3_FIM = track.children.length - 1;   // índice da tela de fim do bloco 3
 
   // Animação: a cruz do eixo x percorre o domínio (−3 a 4) e mostra os pontos destacados
@@ -4655,13 +4630,14 @@
   missaoModal.className = 'missao-modal'; missaoModal.hidden = true;
   document.body.appendChild(missaoModal);
 
+  // atual = 4: missão cumprida (fim do Bloco 3), as três regiões com "Revisar"
   function mostrarMissao(caixa, atual, aoSeguir) {
-    const botao = atual === 1 ? 'Aceitar a missão ▶' : `Seguir para o Bloco ${atual} ▶`;
+    const botao = atual === 1 ? 'Aceitar a missão ▶' : atual === 4 ? 'Sair' : `Seguir para o Bloco ${atual} ▶`;
     caixa.innerHTML = `
       <div class="mi-cartao" role="dialog" aria-label="Sua missão">
         <div class="mi-cab"><p class="t1">Descubra com o Gráfico</p><p class="t2">André Silva - IFRJ - 2026 - v.01</p></div>
         <div class="mi-corpo">
-          <span class="mi-tag">Sua missão · Jornada ${jornada}</span>
+          <span class="mi-tag">${atual === 4 ? 'Missão cumprida' : 'Sua missão'} · Jornada ${jornada}</span>
           <h2>Todo gráfico conta uma história.</h2>
           <p>Atravesse as três regiões e descubra o que cada gráfico diz.</p>
           <ol class="mi-regioes">${REGIOES.map(([nome, desc], i) => {
