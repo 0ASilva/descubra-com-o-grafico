@@ -436,6 +436,22 @@
   .teclado { display: grid; grid-template-columns: repeat(4, 52px); gap: 6px; justify-content: center; }
   .teclado button { width: 52px; min-height: 44px; padding: 0; font-size: 1.1rem; }
   .fim-botoes { display: grid; gap: 10px; max-width: 320px; margin: 16px auto; }
+  /* instalar o app: cartão na tela inicial, com o caminho certo para cada navegador */
+  .instalar { margin: 12px auto 0; max-width: 520px; background: #fff; border: 1.5px dashed var(--laranja); border-radius: 14px; padding: 12px 14px;
+    display: grid; grid-template-columns: 44px 1fr; gap: 4px 12px; align-items: center; text-align: left; }
+  .instalar[hidden] { display: none; }
+  .instalar .ic { grid-row: span 2; width: 44px; height: 44px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 6px rgba(36, 20, 54, .15); }
+  .instalar .ic svg { display: block; width: 100%; height: 100%; }
+  .instalar b { color: var(--roxo); font-size: 1rem; }
+  .instalar .txt { font-size: .88rem; color: var(--tinta-fraca); line-height: 1.35; }
+  .instalar .bts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .instalar .bts button, .instalar .bts a { min-height: 42px; padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: .92rem; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center; }
+  .instalar .bts .principal { background: var(--laranja); color: #fff; border: 0; flex: 1 1 auto; }
+  .instalar .bts .sec { background: #fff; color: var(--roxo); border: 1.5px solid var(--borda); }
+  .instalar .passos { grid-column: 1 / -1; margin: 6px 0 0; padding-left: 20px; font-size: .9rem; }
+  .instalar .passos li { margin: 2px 0; }
+  .instalar .compart { display: inline-block; vertical-align: -3px; width: 16px; height: 18px; }
   #festa { position: fixed; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
   @media (prefers-reduced-motion: reduce) {
     .icon.pulsar { animation: none; box-shadow: 0 0 0 3px #FF6633; }
@@ -980,6 +996,13 @@
             </div>
             <button type="button" class="link" id="trocarUsuario">Não é você? Trocar de usuário</button>
           </div>
+        </div>
+        <!-- instalar o app (preenchido conforme o navegador; some quando o app já está instalado) -->
+        <div class="instalar" id="instalar" hidden>
+          <span class="ic"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#FAD400"/><g stroke="#2b2140" stroke-width="16"><line x1="0" y1="256" x2="512" y2="256"/><line x1="256" y1="0" x2="256" y2="512"/></g><path d="M84 350 C120 150 150 120 168 134 C210 165 260 330 300 360 C320 378 340 376 344 376 C380 360 410 260 428 160" fill="none" stroke="#473366" stroke-width="40" stroke-linecap="round"/><circle cx="168" cy="134" r="30" fill="#e53935" stroke="#fff" stroke-width="10"/><circle cx="344" cy="376" r="30" fill="#e53935" stroke="#fff" stroke-width="10"/></svg></span>
+          <b id="instTit">Instale o app no celular</b>
+          <span class="txt" id="instTxt"></span>
+          <div class="bts" id="instBts"></div>
         </div>
       </div>
     </section>
@@ -3174,7 +3197,7 @@
 
   // VERSÃO: false = versão final para os estudantes; true = versão de estudo do professor, com atalhos
   // na tela inicial para ir direto aos blocos 2 e 3.
-  const MODO_PROFESSOR = false;
+  const MODO_PROFESSOR = true;
   if (MODO_PROFESSOR) {
     const cardInicial = track.children[0].querySelector('.card-sec');
     const atalhos = document.createElement('div');
@@ -5293,6 +5316,108 @@
   atualizarCadernos();
 
 })();
+</script>
+<script>
+  // ---------- instalar o app: o caminho certo para cada navegador ----------
+  // Chrome (Android ou computador): botão de um toque. Navegador Samsung: abrir no Chrome (a instalação pelo
+  // Samsung gera um pacote que o Google Play Protect bloqueia). Dentro do Classroom/WhatsApp: abrir no navegador.
+  // iPhone: passo a passo do Safari. App já instalado: o cartão não aparece.
+  (function () {
+    const caixa = document.getElementById('instalar');
+    if (!caixa) return;
+    const ua = navigator.userAgent;
+    const instalado = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    if (instalado) return;
+    const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const android = /Android/.test(ua);
+    const samsung = /SamsungBrowser/.test(ua);
+    const appInterno = /; wv\)|FBAN|FBAV|Instagram|WhatsApp|Line\/|GSA\//.test(ua);
+    // o Chrome de verdade (outros navegadores Android também dizem "Chrome" na identificação)
+    const chrome = android && /Chrome\/\d/.test(ua) && !samsung && !appInterno && !/OPR\/|EdgA\/|Firefox\/|YaBrowser|MiuiBrowser|HuaweiBrowser|UCBrowser|DuckDuckGo/.test(ua);
+    const safari = ios && /Safari\//.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(ua);
+    const endereco = location.href.split('#')[0].split('?')[0];
+    const noChrome = `intent://${location.host}${location.pathname}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(endereco)};end`;
+    const tit = document.getElementById('instTit'), txt = document.getElementById('instTxt'), bts = document.getElementById('instBts');
+    const COMPART = '<svg class="compart" viewBox="0 0 16 18" aria-label="Compartilhar"><path d="M8 1v11M4 5l4-4 4 4" fill="none" stroke="#2f6fde" stroke-width="1.8" stroke-linecap="round"/><path d="M3 8H1.8v9h12.4V8H13" fill="none" stroke="#2f6fde" stroke-width="1.8"/></svg>';
+    let pedido = null;
+
+    function copiarLink(b) {
+      const ok = () => { b.textContent = 'Link copiado!'; setTimeout(() => { b.textContent = 'Copiar o link'; }, 2200); };
+      if (navigator.clipboard) navigator.clipboard.writeText(endereco).then(ok, () => prompt('Copie o link:', endereco));
+      else prompt('Copie o link:', endereco);
+    }
+    function botao(texto, classe, acao, href) {
+      const b = document.createElement(href ? 'a' : 'button');
+      if (href) b.href = href; else b.type = 'button';
+      b.className = classe; b.textContent = texto;
+      if (acao) b.addEventListener('click', ev => acao(b, ev));
+      bts.appendChild(b);
+      return b;
+    }
+    function mostrar() {
+      bts.innerHTML = ''; caixa.querySelectorAll('.passos').forEach(x => x.remove());
+      if (pedido && !samsung) {
+        // Chrome / Edge: instalação com um toque
+        tit.textContent = 'Instale o app';
+        txt.textContent = 'Abre em tela cheia, pelo ícone, e funciona sem internet.';
+        botao('Instalar o app', 'principal', async b => {
+          b.disabled = true;
+          pedido.prompt();
+          const r = await pedido.userChoice.catch(() => ({ outcome: 'dismissed' }));
+          pedido = null;
+          if (r.outcome === 'accepted') concluido(); else mostrar();
+        });
+        return;
+      }
+      if (chrome) {
+        // no Chrome, o botão "Instalar o app" aparece quando o Chrome libera; até lá (ou se não liberar), o menu ⋮
+        tit.textContent = 'Instale o app';
+        txt.textContent = '';
+        const ol = document.createElement('ol'); ol.className = 'passos';
+        ol.innerHTML = '<li>Toque em <b>⋮</b> (no canto de cima do Chrome).</li><li>Toque em <b>"Instalar app"</b> (ou "Adicionar à tela inicial" e depois "Instalar").</li>'
+          + '<li style="list-style:none;margin-left:-20px;color:var(--tinta-fraca);font-size:.84rem">Abriu pelo Classroom? Antes, toque em ⋮ e em <b>"Abrir no Chrome"</b>.</li>';
+        caixa.appendChild(ol);
+        return;
+      }
+      if (android) {
+        tit.textContent = 'Instale o app pelo Chrome';
+        txt.textContent = samsung
+          ? 'Neste navegador a instalação dá um aviso do Google. Abra no Chrome e instale por lá.'
+          : appInterno ? 'Você abriu o link dentro de outro app. Abra no Chrome para instalar.'
+            : 'Abra o link no Chrome para instalar.';
+        botao('Abrir no Chrome', 'principal', null, noChrome);
+        botao('Copiar o link', 'sec', copiarLink);
+        return;
+      }
+      if (ios) {
+        tit.textContent = 'Instale o app no iPhone';
+        if (!safari) {
+          txt.textContent = 'Abra este link no Safari: só por ele o iPhone instala o app.';
+          botao('Copiar o link', 'principal', copiarLink);
+          return;
+        }
+        txt.textContent = 'São dois toques no Safari:';
+        const ol = document.createElement('ol'); ol.className = 'passos';
+        ol.innerHTML = `<li>Toque em Compartilhar ${COMPART} (na barra do Safari).</li><li>Role e toque em <b>"Adicionar à Tela de Início"</b> e depois em <b>"Adicionar"</b>.</li>`;
+        caixa.appendChild(ol);
+        return;
+      }
+      caixa.hidden = true;   // computador sem o botão do navegador: nada a mostrar
+      return;
+    }
+    function concluido() {
+      tit.textContent = 'App instalado!';
+      txt.textContent = 'Agora abra pelo ícone "Descubra" na tela inicial.';
+      bts.innerHTML = '';
+    }
+    window.addEventListener('beforeinstallprompt', ev => {
+      ev.preventDefault();          // o app mostra o próprio botão
+      if (samsung) return;          // no Samsung, o caminho é o Chrome
+      pedido = ev; caixa.hidden = false; mostrar();
+    });
+    window.addEventListener('appinstalled', () => { caixa.hidden = false; concluido(); });
+    if (android || ios) { caixa.hidden = false; mostrar(); }
+  })();
 </script>
 <script>
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
