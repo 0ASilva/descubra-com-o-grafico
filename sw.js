@@ -3,7 +3,7 @@
 //   sem internet (ou rede lenta, mais de 4 s), abre a cópia guardada.
 // - Ícones, logo e manifesto vêm da cópia guardada.
 // - Os envios para a planilha do professor (Google Apps Script) nunca passam por aqui.
-const CACHE = 'dcg-professor-v42';
+const CACHE = 'dcg-estudantes-v42';
 const ARQUIVOS = ["./", "index.html", "manifest.json", "icone-192.png", "icone-512.png", "icone-180.png", "ifrj_logo_branca.png"];
 
 self.addEventListener('install', ev => {
